@@ -1,6 +1,9 @@
+import uuid
+
+
 class Parcel: 
-    def __init__(self, parcel_id, weight, dimension, fragile):
-        self.id = parcel_id
+    def __init__(self, weight, dimension, fragile):
+        self.id = str(uuid.uuid4())  # Generate a unique parcel ID
         self.weight = weight
         self.dimension = dimension
         self.fragile = fragile 
@@ -12,5 +15,9 @@ class Parcel:
             "dimension": self.dimension,
             "fragile": self.fragile
         }
-#Responsibilities of parcel
+
+
+    def verify_handover(self):
+        # Logic to verify the handover of the parcel
+        pass
 
