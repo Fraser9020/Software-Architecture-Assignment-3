@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>YOWD Delivery System</title>
+    <style>
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>YOWD Delivery System</h1>
+        <p>Customer: please review your quote below.</p>
+    </header>
+
+    <main>
+                    <h2>Your Delivery Quote</h2>
+
+            <fieldset>
+                <legend>Quote Details</legend>
+                <p><strong>Quote ID:</strong> {{ quote.quoteid }}</p>
+                <p><strong>Request ID:</strong> {{ quote.request_id }}</p>
+                <p><strong>Delivery Fee:</strong> ${{ "%.2f"|format(quote.deliveryfee) }}</p>
+                <p><strong>Estimated Delivery Time:</strong> {{ quote.estimateddeliverytime }}</p>
+                <p><strong>Valid Until:</strong> {{ quote.expiredate.strftime("%d/%m/%Y") }}</p>
+                <p><strong>Status:</strong> {{ quote.status }}</p>
+            </fieldset>
+
+            <form action="/accept_quote" method="POST">
+                <!-- Hidden: tells Flask WHICH quote is being accepted -->
+                <input type="hidden" name="quote_id" value="{{ quote.quoteid }}">
+                <button type="submit">Accept Quote</button>
+            </form> 
+            <!-- Deny quote -->
+            <form action="/deny_quote" method="POST">
+                <!-- Hidden: tells Flask WHICH quote is being denied -->
+                <input type="hidden" name="quote_id" value="{{ quote.quoteid }}">
+                <button type="submit">Deny Quote</button>
+            </form>
+
+    </main>
+
+</body>
+</html>
