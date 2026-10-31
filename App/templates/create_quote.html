@@ -81,7 +81,36 @@
 
              <!-- Office staff enter the quote when they submit the quote that then needs to be sent to the customer 
               the customer accepts or rejects do we need to initiate that, possbily maybe in the next page have the customer look at the final quote and say deny 
-              or accept. once accepted that creates the delivery order--> 
+              or accept. once accepted that creates the delivery order
+              
+              1. Once submit code is pressed take it will to the accept quote page.  
+                    1.1 Build accept quote page. accept_quote.html  
+                    1.2 Render it in the app main. and have a refernece to it at the end of create quote.
+              
+              2.Display quote, (fee, estimated time)
+                    2.1 Firstly display quote, ill need info from create quote. 
+                        Quote id. made when it is initated 
+                        request id (from order request)   
+                        delivery fee  (from the input of create quote) 
+                        estimated delivery time (from input of create quote)
+                        expiry date initiated from quote creation (date time plus 30) 
+                        status (initally pending but changed to accepted) 
+
+              3. Offer accept or decline
+                    3.1  if declined, deletes quote  and order request sends back to home page 
+                    3.2 if accepted needs to take them to a you4 order is on its way, and possibly change status for the order to being delivered
+              4. Upon acceptance button pressed, call the function create delivery. 
+                    Delivery id (random id initated when created) 
+                    satus initally always set to being delivered 
+                    (
+                    it should know the parcels  
+                    it should know the delivery address and pick up address 
+                    it should know who it is assigned to  
+                    it should know the order request id right? 
+                    
+                    ) 
+
+              --> 
 
             <button type="submit" id="submit-quote">
                 Submit Quote 

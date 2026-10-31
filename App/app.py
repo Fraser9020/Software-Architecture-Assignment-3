@@ -5,11 +5,12 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 if BASE_DIR not in sys.path:
     sys.path.insert(0, BASE_DIR)
 
-from flask import Flask, render_template, request
+from flask import Flask, redirect, render_template, request
 from Models.Customer import Customer
 from Models.Order_Request import OrderRequest
 from Models.Parcel import Parcel
-from Models.Quote import Quote
+from Models.Quote import Quote 
+from Models.Delivery import Delivery
 from Dataholders.Address import Delivery_Address 
 
 
@@ -169,22 +170,88 @@ def submit_quote():
 
     #office staff would call accept
 
+    
+        
+    #f"Quote created successfully! Quote ID: {quote.quoteid}<br>"
+    # f"For order request: {quote.request_id}<br>"
+    #f"Delivery fee: ${quote.deliveryfee:.2f}<br>"
+    # f"Estimated delivery time: {quote.estimateddeliverytime}<br>"
+    # f"Quote valid until: {quote.expiredate.strftime('%d/%m/%Y')}" 
+    return render_template("accept_quote.html", quote=quote, order_request=order_request)
+
+
+    
+#3 Customer clicks Accept Quote
+@app.route("/accept_quote", methods=["POST"])
+def accept_quote():
+    quote_id = (request.form.get("quote_id") or "").strip()
+
+    # Look up the quote that was saved in submit_quote
+    quote = quotes.get(quote_id)
+    if quote is None:
+        return "Quote not found", 404
+
+    # Stop the same quote being accepted twice (e.g. double click or refresh)
+    if quote.status != "pending":
+        return f"This quote has already been {quote.status}", 400
+
+    if not quote.accept_quote():
+        return "This quote has expired", 400
+
+    # Update the linked order request too
+    order_request = order_requests.get(quote.request_id)
+    if order_request is not None:
+        order_request.status = "accepted"
+
+    print("Quote accepted:", quote.quoteid)
+
+
+    #create delivery linked to the order request
+    # get delivery date from quote
+    delivery = Delivery(quote.request_id, quote.estimateddeliverytime)
+    #save delivery
+    deliveries[delivery.delivery_id] = delivery
+
+    print("Delivery created!")
+    print(delivery)
+
     return (
-        f"Quote created successfully! Quote ID: {quote.quoteid}<br>"
-        f"For order request: {quote.request_id}<br>"
-        f"Delivery fee: ${quote.deliveryfee:.2f}<br>"
-        f"Estimated delivery time: {quote.estimateddeliverytime}<br>"
-        f"Quote valid until: {quote.expiredate.strftime('%d/%m/%Y')}"
+        f"Quote accepted! Your order is on its way.<br>"
+        f"Quote ID: {quote.quoteid}<br>"
+        f"Order request: {quote.request_id}<br>"
+        f"Delivery ID: {delivery.delivery_id}<br>"
+        f"Estimated delivery: {delivery.delivery_date}"
     )
+
+
+#4 Customer clicks Deny Quote - deletes the quote and order request then goes back home
+@app.route("/deny_quote", methods=["POST"])
+def deny_quote():
+    quote_id = (request.form.get("quote_id") or "").strip()
+
+    quote = quotes.get(quote_id)
+    if quote is None:
+        return "Quote not found", 404
+
+    if quote.status != "pending":
+        return f"This quote has already been {quote.status}", 400
+
+    # remove the quote and its order request
+    del quotes[quote_id]
+    order_requests.pop(quote.request_id, None)
+
+    print("Quote denied:", quote_id)
+
+    return redirect("/")
 
 
 
 def schedule_delivery():
-    delivery_id = (request.form.get("delivery_id") or "").strip()
-    status = (request.form.get("status") or "").strip()
-    delivery_date = (request.form.get("delivery_date") or "").strip()
-    delivery_status = (request.form.get("delivery_status") or "").strip()
-    return "Delivery scheduled"
+        delivery_id = (request.form.get("delivery_id") or "").strip()
+        status = (request.form.get("status") or "").strip()
+        delivery_date = (request.form.get("delivery_date") or "").strip()
+        delivery_status = (request.form.get("delivery_status") or "").strip()
+        return "Delivery scheduled"
 
 
 @app.route("/")

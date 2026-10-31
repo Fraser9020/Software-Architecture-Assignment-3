@@ -16,13 +16,13 @@ class Quote:
     # Responsibilities of quote
 
     def Is_Valid(self):
-        # Logic to check if the quote is still valid
-        pass
-
-
+        return date.today() <= self.expiredate
 
     def accept_quote(self):
-        # Logic to accept the quote
-        pass
+        if not self.Is_Valid():
+            return False
+        self.status = "accepted"
+        return True
+
 
 
