@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>YOWD Delivery System</title>
+    <style>
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>YOWD Delivery System</h1>
+        <p>Office staff: please review the order and enter the quote.</p>
+    </header>
+
+    <main>
+        <h2>Create a Delivery Quote</h2>
+
+        <!-- Display existing order information -->
+        <fieldset>
+            <legend>Customer Information</legend>
+
+            <p><strong>Customer Name:</strong> {{ customer.firstname }} {{ customer.lastname }}</p>
+            <p><strong>Email:</strong> {{ customer.email }}</p>
+            <p><strong>Phone:</strong> {{ customer.phone }}</p>
+            <p><strong>Customer ID:</strong> {{ customer.customer_id }}</p>
+        </fieldset>
+
+        <fieldset>
+            <legend>Order Request</legend>
+
+            <p><strong>Request ID:</strong> {{ order_request.request_id }}</p>
+            <p><strong>Submitted:</strong> {{ order_request.submittedAt.strftime("%d/%m/%Y %H:%M") }}</p>
+            <p><strong>Status:</strong> {{ order_request.status }}</p>
+            <p><strong>Pickup Address:</strong> {{ pickupaddress.street }}, {{ pickupaddress.suburb }} {{ pickupaddress.postcode }}</p>
+            <p><strong>Delivery Address:</strong> {{ deliveryaddress.street }}, {{ deliveryaddress.suburb }} {{ deliveryaddress.postcode }}</p>
+        </fieldset>
+
+        <fieldset>
+            <legend>Parcels ({{ order_request.number_of_parcels }})</legend>
+
+            <table>
+                <tr>
+                    <th>#</th>
+                    <th>Weight (kg)</th>
+                    <th>Dimensions (cm)</th>
+                    <th>Fragile</th>
+                </tr>
+                {% for parcel in parcels %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ parcel.weight }}</td>
+                    <td>{{ parcel.dimension }}</td>
+                    <td>{{ "Yes" if parcel.fragile else "No" }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </fieldset>
+
+        <!-- Office staff enter the quote -->
+        <form action="/submit_quote" method="POST">
+
+            <fieldset>
+                <legend>Quote (Office Staff)</legend>
+
+                <!-- Hidden: sends the request ID back so the quote is linked to this order -->
+                <input type="hidden" name="request_id" value="{{ order_request.request_id }}">
+
+                <div class="field">
+                    <label for="deliveryfee">Delivery Fee ($)</label>
+                    <input type="number" id="deliveryfee" name="deliveryfee" step="0.01" min="0" required>
+                </div>
+
+                <div class="field">
+                    <label for="estimateddeliverytime">Estimated Delivery Time</label>
+                    <input type="text" id="estimateddeliverytime" name="estimateddeliverytime"
+                        placeholder="e.g. 2-3 business days" required>
+                </div>
+            </fieldset>
+
+             <!-- Office staff enter the quote when they submit the quote that then needs to be sent to the customer 
+              the customer accepts or rejects do we need to initiate that, possbily maybe in the next page have the customer look at the final quote and say deny 
+              or accept. once accepted that creates the delivery order--> 
+
+            <button type="submit" id="submit-quote">
+                Submit Quote 
+            </button>
+        </form>
+    </main>
+
+</body>
+</html>

@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>YOWD Delivery System</title>
+    <style>
+        
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>YOWD Delivery System</h1>
+        <p>Welcome! Please enter your order information.</p>
+    </header>
+
+    <main>
+        <h2>Create an Order Request</h2>
+
+        <form  action="/submit_order" method="POST">
+
+            <fieldset>
+                <legend>Customer Information</legend>
+
+                <div class="field">
+                    <label for="firstname">First Name</label>
+                    <input type="text" id="firstname" name="firstname" required>
+                </div>
+
+                <div class="field">
+                        <label for="lastname">Last Name</label>
+                        <input type="text" id="lastname" name="lastname" required>
+                    </div>
+
+                <div class="field">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+
+                <div class="field">
+                    <label for="phone">Phone</label>
+                    <input type="tel" id="phone" name="phone" required>
+                </div>
+
+               <div class="field">
+                        <label for="pickupstreet">Pickup Street</label>
+                        <input type="text" id="pickupstreet" name="pickupstreet" required>
+                    </div>
+
+                    <div class="field">
+                        <label for="pickupsuburb">Pickup Suburb</label>
+                        <input type="text" id="pickupsuburb" name="pickupsuburb" required>
+                    </div>
+
+                    <div class="field">
+                        <label for="pickuppostcode">Pickup Postcode</label>
+                        <input type="text" id="pickuppostcode" name="pickuppostcode"
+                            inputmode="numeric" pattern="[0-9]{4}" maxlength="4" required>
+                    </div>
+
+                    <div class="field">
+                        <label for="deliverystreet">Delivery Street</label>
+                        <input type="text" id="deliverystreet" name="deliverystreet" required>
+                    </div>
+
+                    <div class="field">
+                        <label for="deliverysuburb">Delivery Suburb</label>
+                        <input type="text" id="deliverysuburb" name="deliverysuburb" required>
+                    </div>
+
+                    <div class="field">
+                        <label for="deliverypostcode">Delivery Postcode</label>
+                        <input type="text" id="deliverypostcode" name="deliverypostcode"
+                            inputmode="numeric" pattern="[0-9]{4}" maxlength="4" required>
+                    </div>
+                
+                <h2>Add parcel to Delivery</h2>
+                 <div id="Add_Parcel_to_Delivery">
+                    <fieldset class="parcel" method="post" action="/submit_order">
+
+                        <label for="weight">Weight (kg)</label>
+                            <input type="number" id="weight" name="parcel_weight" step="0.01" required>
+
+                        <label for="dimensions">Dimensions (L x W x H in cm)</label>
+                            <input type="text" id="dimensions" name="dimensions" required>
+
+                        <label for="fragile">Fragile</label>
+                            <select id="fragile" name="parcel_fragile" required>
+                                <option value="false">No</option>
+                                <option value="true">Yes</option>
+                            </select>
+
+                        <button type="button" class="remove-btn">Remove</button>
+                    </fieldset>
+                </div>
+
+                <button type="button" id="add-parcel">Add another parcel</button>
+
+                <script>
+                    const list = document.getElementById("Add_Parcel_to_Delivery");
+
+                    document.getElementById("add-parcel").addEventListener("click", function () {
+                        const first = list.querySelector(".parcel");
+                        const copy = first.cloneNode(true);          // true = copy everything inside too
+
+                        copy.querySelectorAll("input").forEach(function (box) {
+                            box.value = "";                          // clear what was typed in the original
+                        });
+
+                        list.appendChild(copy);
+                    });
+
+                    list.addEventListener("click", function (event) {  
+                        
+                    if (list.querySelectorAll(".parcel").length > 1 && event.target.classList.contains("remove-btn")) {
+                        event.target.closest(".parcel").remove();
+                    }
+                    }); 
+                   
+                    //send over the number of parcels to the order request form
+                    
+                    function sendParcelCountToOrderRequestForm() {
+                        const parcelCount = list.querySelectorAll(".parcel").length;
+                        
+                    }
+
+                    document.querySelector("form").addEventListener("submit", function () {
+                     sendParcelCountToOrderRequestForm();
+                    
+                    });
+
+
+                
+                    
+
+                </script>
+                
+
+                
+                
+            </fieldset>
+
+           
+
+            <button type="submit" id="submit-order">
+            Submit Order Request
+                </button>
+        </form>
+    </main>
+
+</body>
+</html>
