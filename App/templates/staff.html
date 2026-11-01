@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>YOWD Delivery System</title>
+    <style>
+        .ok { color: green; } .err { color: #b00020; font-weight: bold; }
+        table { border-collapse: collapse; } td, th { border: 1px solid #999; padding: 4px 8px; }
+        nav a { margin-right: 12px; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>YOWD Delivery System</h1>
+        <nav><a href="/">Home</a><a href="/staff">Staff</a><a href="/availability">Availability</a><a href="/allocate">Allocate</a><a href="/history">History</a></nav>
+    </header>
+    <main>
+    {% if message %}<p class="ok">{{ message }}</p>{% endif %}
+    {% if error %}<p class="err">Error: {{ error }}</p>{% endif %}
+        <h2>Staff Records</h2>
+        <fieldset>
+            <legend>Current staff</legend>
+            <table>
+                <tr><th>ID</th><th>Name</th><th>Role</th><th>Phone</th><th>Status</th><th></th></tr>
+                {% for m in staff %}
+                <tr>
+                    <td>{{ m.staff_id }}</td><td>{{ m.name }}</td><td>{{ m.role }}</td><td>{{ m.phone }}</td>
+                    <td>{{ "Active" if m.is_active() else "Inactive from " ~ m.end_date }}</td>
+                    <td>{% if m.is_active() %}
+                        <form action="/staff/deactivate" method="POST" style="display:inline">
+                            <input type="hidden" name="staff_id" value="{{ m.staff_id }}">
+                            <button type="submit">Deactivate</button>
+                        </form>{% endif %}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </fieldset>
+        <fieldset>
+            <legend>Create staff member</legend>
+            <form action="/staff/create" method="POST">
+                <label>Role
+                    <select name="role"><option value="office">Office staff</option><option value="delivery">Delivery staff</option></select>
+                </label><br>
+                <label>Staff ID <input type="text" name="staff_id" placeholder="e.g. S003"></label><br>
+                <label>Name <input type="text" name="name"></label><br>
+                <label>Phone <input type="text" name="phone"></label><br>
+                <button type="submit">Create</button>
+            </form>
+        </fieldset>
+    </main>
+</body>
+</html>
