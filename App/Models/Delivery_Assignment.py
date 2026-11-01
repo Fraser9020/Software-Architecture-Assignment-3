@@ -31,7 +31,7 @@ class DeliveryAssignment:
         self.assigned_by = assigned_by
         self.window = window
         self.status = AssignmentStatus.PENDING
-        self.created_at = datetime.now()
+        self.assigned_at = datetime.now()
         self.withdrawn_reason: str | None = None
 
     # -- lifecycle ----------------------------------------------------------
@@ -62,8 +62,13 @@ class DeliveryAssignment:
 
     # -- queries ------------------------------------------------------------
 
-    def is_current(self) -> bool:
+    @property
+    def active(self) -> bool:
+        """True while this is the delivery's current assignment."""
         return self.status is AssignmentStatus.ACTIVE
+
+    def is_current(self) -> bool:
+        return self.active
 
     def is_assigned_to(self, staff_id: str) -> bool:
         """Used by pickup/handover to confirm the reporting driver."""

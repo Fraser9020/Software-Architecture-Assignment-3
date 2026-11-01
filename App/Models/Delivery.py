@@ -6,12 +6,12 @@ from Dataholders.Time_Window import TimeWindow
 class Delivery:
     """A committed delivery created when a quote is accepted.
 
-    Status flow (A2 §5.2): accepted -> allocated -> picked up -> in transit
+    Status flow (A2 §5.2): accepted -> Assigned -> picked up -> in transit
     -> delivered. Allocation may only happen while the delivery is in one
     of ALLOCATABLE.
     """
 
-    ALLOCATABLE = ("accepted", "allocation required")
+    ALLOCATABLE = ("accepted", "allocation required")   # compared lower-case
 
     def __init__(self, request_id, delivery_date, delivery_status="accepted"):
         self.request_id = request_id  # Associate the delivery with an order request
@@ -46,13 +46,13 @@ class Delivery:
         return None
 
     def set_assignment(self, assignment):
-        if self.delivery_status not in self.ALLOCATABLE:
+        if self.delivery_status.lower() not in self.ALLOCATABLE:
             raise ValueError(
                 f"Delivery {self.delivery_id[:8]} is not awaiting allocation "
                 f"(status: {self.delivery_status}).")
         self.assignments.append(assignment)
         self.pickup_window = assignment.window
-        self.delivery_status = "allocated"
+        self.delivery_status = "Assigned"
 
     def schedule_delivery(self, status, delivery_date, request_id):
         # Logic to schedule a delivery for the given order
