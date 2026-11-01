@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>YOWD Delivery System</title>
+    <style>
+        .ok { color: green; } .err { color: #b00020; font-weight: bold; }
+        table { border-collapse: collapse; } td, th { border: 1px solid #999; padding: 4px 8px; }
+        nav a { margin-right: 12px; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>YOWD Delivery System</h1>
+        <nav><a href="/">Home</a><a href="/staff">Staff</a><a href="/availability">Availability</a><a href="/allocate">Allocate</a><a href="/history">History</a></nav>
+    </header>
+    <main>
+    {% if message %}<p class="ok">{{ message }}</p>{% endif %}
+    {% if error %}<p class="err">Error: {{ error }}</p>{% endif %}
+        <h2>Delivery History</h2>
+        {% if events %}
+        <table>
+            <tr><th>Delivery</th><th>Event</th><th>By</th><th>Note</th></tr>
+            {% for e in events %}<tr><td>{{ e[0][:8] }}</td><td>{{ e[1] }}</td><td>{{ e[2] }}</td><td>{{ e[3] }}</td></tr>{% endfor %}
+        </table>
+        {% else %}<p><em>No events yet.</em></p>{% endif %}
+    </main>
+</body>
+</html>

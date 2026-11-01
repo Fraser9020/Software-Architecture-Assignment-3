@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>YOWD Delivery System</title>
+    <style>
+        .ok { color: green; } .err { color: #b00020; font-weight: bold; }
+        table { border-collapse: collapse; } td, th { border: 1px solid #999; padding: 4px 8px; }
+        nav a { margin-right: 12px; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>YOWD Delivery System</h1>
+        <nav><a href="/">Home</a><a href="/staff">Staff</a><a href="/availability">Availability</a><a href="/allocate">Allocate</a><a href="/history">History</a></nav>
+    </header>
+    <main>
+    {% if message %}<p class="ok">{{ message }}</p>{% endif %}
+    {% if error %}<p class="err">Error: {{ error }}</p>{% endif %}
+        <h2>Choose Delivery Staff</h2>
+        <fieldset>
+            <legend>Delivery {{ delivery.delivery_id[:8] }} - pickup {{ window }}</legend>
+            {% if free %}
+            <form action="/allocate/confirm" method="POST">
+                <input type="hidden" name="office_id" value="{{ office.staff_id }}">
+                <input type="hidden" name="delivery_id" value="{{ delivery.delivery_id }}">
+                <input type="hidden" name="date" value="{{ form.date }}">
+                <input type="hidden" name="start" value="{{ form.start }}">
+                <input type="hidden" name="end" value="{{ form.end }}">
+                <p>Free delivery staff for this window:</p>
+                {% for s in free %}
+                <label><input type="radio" name="staff_id" value="{{ s.staff_id }}"> {{ s.staff_id }} {{ s.name }}</label><br>
+                {% endfor %}
+                <button type="submit">Allocate</button>
+            </form>
+            {% else %}
+            <p class="err">No delivery staff are free for {{ window }}. Ask staff to <a href="/availability">declare availability</a> or choose another window.</p>
+            {% endif %}
+            <p><a href="/allocate">Back</a></p>
+        </fieldset>
+    </main>
+</body>
+</html>

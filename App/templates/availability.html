@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>YOWD Delivery System</title>
+    <style>
+        .ok { color: green; } .err { color: #b00020; font-weight: bold; }
+        table { border-collapse: collapse; } td, th { border: 1px solid #999; padding: 4px 8px; }
+        nav a { margin-right: 12px; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>YOWD Delivery System</h1>
+        <nav><a href="/">Home</a><a href="/staff">Staff</a><a href="/availability">Availability</a><a href="/allocate">Allocate</a><a href="/history">History</a></nav>
+    </header>
+    <main>
+    {% if message %}<p class="ok">{{ message }}</p>{% endif %}
+    {% if error %}<p class="err">Error: {{ error }}</p>{% endif %}
+        <h2>Delivery Staff Availability</h2>
+        <fieldset>
+            <legend>Declared availability</legend>
+            {% for d in drivers %}
+            <p><strong>{{ d.staff_id }} {{ d.name }}</strong>{% if not d.is_active() %} (inactive){% endif %}</p>
+            {% if d.availability.windows %}
+            <table>
+                <tr><th>Date</th><th>Start</th><th>End</th><th>Reserved by</th><th></th></tr>
+                {% for w in d.availability.windows %}
+                <tr>
+                    <td>{{ w.window.day }}</td><td>{{ w.window.start.strftime("%H:%M") }}</td><td>{{ w.window.end.strftime("%H:%M") }}</td>
+                    <td>{{ w.reserved_by or "free" }}</td>
+                    <td><form action="/availability/remove" method="POST" style="display:inline">
+                        <input type="hidden" name="staff_id" value="{{ d.staff_id }}">
+                        <input type="hidden" name="date" value="{{ w.window.day }}">
+                        <input type="hidden" name="start" value="{{ w.window.start.strftime('%H:%M') }}">
+                        <input type="hidden" name="end" value="{{ w.window.end.strftime('%H:%M') }}">
+                        <button type="submit">Remove</button></form></td>
+                </tr>
+                {% endfor %}
+            </table>
+            {% else %}<p><em>No availability declared.</em></p>{% endif %}
+            {% endfor %}
+        </fieldset>
+        <fieldset>
+            <legend>Declare availability</legend>
+            <form action="/availability/add" method="POST">
+                <label>Delivery staff
+                    <select name="staff_id">{% for d in drivers if d.is_active() %}<option value="{{ d.staff_id }}">{{ d.staff_id }} {{ d.name }}</option>{% endfor %}</select>
+                </label><br>
+                <label>Date <input type="date" name="date"></label><br>
+                <label>Start <input type="time" name="start"></label>
+                <label>End <input type="time" name="end"></label><br>
+                <button type="submit">Add availability</button>
+            </form>
+        </fieldset>
+    </main>
+</body>
+</html>
