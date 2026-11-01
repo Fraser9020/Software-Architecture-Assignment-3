@@ -1,4 +1,4 @@
-﻿import os
+import os
 import sys
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -14,11 +14,9 @@ from Models.Delivery import Delivery
 from Dataholders.Address import Delivery_Address 
 
 
-# Ensure that the objects can be accsessed
-customers = {}       # customer_id -> Customer
-order_requests = {}  # request_id  -> OrderRequest
-quotes = {}          # quote_id    -> Quote
-deliveries = {}      # delivery_id -> Delivery 
+# Shared in-memory stores (see state.py) so every area sees the same objects
+from state import customers, order_requests, quotes, deliveries
+from allocation import allocation_bp, seed_staff
 
 
 
@@ -28,6 +26,8 @@ app = Flask(
     template_folder=os.path.join(BASE_DIR, "templates"),
     static_folder=os.path.join(BASE_DIR, "static"),
 )
+app.register_blueprint(allocation_bp)   # staff allocation area (Sam)
+seed_staff()
 
 #1 Renders the page to create an order. 
 @app.route("/create_order.html", methods=["GET", "POST"])
