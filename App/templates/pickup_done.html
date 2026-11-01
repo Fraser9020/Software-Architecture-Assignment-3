@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>YOWD Delivery System</title>
+</head>
+<body>
+    <header>
+        <h1>YOWD Delivery System</h1>
+        <p>Delivery staff: pickup and payment</p>
+    </header>
+    <main>
+        <h2>Pickup recorded</h2>
+        {% for m in messages %}<p><strong>{{ m }}</strong></p>{% endfor %}
+        <p>Delivery {{ delivery.delivery_id }} - status: {{ delivery.delivery_status }}</p>
+        <h3>History</h3>
+        <ul>{% for e in history.events %}<li>{{ e.record() }}</li>{% endfor %}</ul>
+        <p><a href="/pickup">Back to pickups</a></p>
+    </main>
+</body>
+</html>
