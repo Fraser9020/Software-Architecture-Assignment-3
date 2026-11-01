@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>YOWD Delivery System</title>
+    <style>
+        .ok { color: green; } .err { color: #b00020; font-weight: bold; }
+        table { border-collapse: collapse; } td, th { border: 1px solid #999; padding: 4px 8px; }
+        nav a { margin-right: 12px; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>YOWD Delivery System</h1>
+        <nav><a href="/">Home</a><a href="/staff">Staff</a><a href="/availability">Availability</a><a href="/allocate">Allocate</a><a href="/history">History</a></nav>
+    </header>
+    <main>
+    {% if message %}<p class="ok">{{ message }}</p>{% endif %}
+    {% if error %}<p class="err">Error: {{ error }}</p>{% endif %}
+        <h2>Allocate Delivery Staff</h2>
+        <fieldset>
+            <legend>Deliveries awaiting allocation</legend>
+            {% if awaiting %}
+            <form action="/allocate/free" method="POST">
+                <label>Office staff
+                    <select name="office_id">{% for o in office if o.is_active() %}<option value="{{ o.staff_id }}">{{ o.staff_id }} {{ o.name }}</option>{% endfor %}</select>
+                </label><br>
+                <label>Delivery
+                    <select name="delivery_id">{% for d in awaiting %}<option value="{{ d.delivery_id }}">{{ d.delivery_id[:8] }} - est. {{ d.delivery_date }} ({{ d.delivery_status }})</option>{% endfor %}</select>
+                </label><br>
+                <label>Pickup date <input type="date" name="date"></label>
+                <label>Start <input type="time" name="start"></label>
+                <label>End <input type="time" name="end"></label><br>
+                <button type="submit">Find free delivery staff</button>
+            </form>
+            {% else %}<p><em>No deliveries awaiting allocation. Accept a quote first.</em></p>{% endif %}
+        </fieldset>
+        <fieldset>
+            <legend>Allocated deliveries</legend>
+            {% if allocated %}
+            <table>
+                <tr><th>Delivery</th><th>Status</th><th>Assigned to</th><th>Window</th><th>Assignment</th><th>Reallocate</th></tr>
+                {% for d in allocated %}{% set a = d.current_assignment() %}
+                <tr>
+                    <td>{{ d.delivery_id[:8] }}</td><td>{{ d.delivery_status }}</td><td>{{ a.staff_id }}</td><td>{{ a.window }}</td><td>{{ a.assignment_id }}</td>
+                    <td><form action="/allocate/reallocate" method="POST">
+                        <input type="hidden" name="delivery_id" value="{{ d.delivery_id }}">
+                        <select name="office_id">{% for o in office if o.is_active() %}<option value="{{ o.staff_id }}">{{ o.staff_id }}</option>{% endfor %}</select>
+                        <select name="staff_id">{% for s in drivers if s.is_active() and s.staff_id != a.staff_id %}<option value="{{ s.staff_id }}">{{ s.staff_id }} {{ s.name }}</option>{% endfor %}</select>
+                        <input type="text" name="reason" placeholder="Reason">
+                        <button type="submit">Reallocate</button></form></td>
+                </tr>
+                {% endfor %}
+            </table>
+            {% else %}<p><em>Nothing allocated yet.</em></p>{% endif %}
+        </fieldset>
+    </main>
+</body>
+</html>
