@@ -85,8 +85,10 @@ class DeliveryStaff(Staff):
     """Picks up and delivers parcels; owns their own availability."""
 
     def __init__(self, staff_id: str, name: str, phone: str,
-                 start_date: date | None = None) -> None:
+                 start_date: date | None = None,
+                 employee_number: str | None = None) -> None:
         super().__init__(staff_id, name, phone, start_date)
+        self.employee_number = employee_number or staff_id
         self.availability = StaffAvailability(staff_id)
 
     def declare_availability(self, window: TimeWindow) -> None:

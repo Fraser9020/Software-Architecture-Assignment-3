@@ -43,7 +43,7 @@ def _office_staff():
 
 def _allocatable():
     return [d for d in deliveries.values()
-            if d.delivery_status in d.ALLOCATABLE]
+            if d.delivery_status.lower() in d.ALLOCATABLE]
 
 
 def _allocated():
@@ -148,7 +148,7 @@ def free_staff():
         return redirect(url_for(".allocate_page", error="Active office staff member not found."))
     if delivery is None:
         return redirect(url_for(".allocate_page", error="Delivery not found."))
-    if delivery.delivery_status not in delivery.ALLOCATABLE:
+    if delivery.delivery_status.lower() not in delivery.ALLOCATABLE:
         return redirect(url_for(".allocate_page",
                                 error=f"Delivery is not awaiting allocation "
                                       f"(status: {delivery.delivery_status})."))

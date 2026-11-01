@@ -71,7 +71,7 @@ def test_allocate_reserves_time_and_updates_delivery(office, driver):
     from state import history as history_log
     a = office.allocate(delivery, driver, win(10, 12), DeliveryHistory)
     assert a.status is AssignmentStatus.ACTIVE
-    assert delivery.status == "allocated"
+    assert delivery.status == "Assigned"
     assert delivery.current_assignment() is a
     assert not driver.availability.is_free(win(10, 12))  # reserved
     assert history_log[-1][1] == "Assigned"
@@ -130,3 +130,18 @@ def test_reallocate_requires_reason(office, driver):
     office.allocate(delivery, driver, win(10, 12))
     with pytest.raises(ValueError, match="reason is required"):
         office.reallocate(delivery, driver, "  ", lambda _: driver)
+
+
+# -- interface used by the pickup/payment area --------------------------
+
+def test_pickup_area_contract(office, driver):
+    from Models.Delivery_Staff import DeliveryStaff as Reexported
+    assert Reexported is type(driver)
+    assert driver.employee_number == "S001"
+    delivery = Delivery("R-D001", "2026-11-05")
+    a = office.allocate(delivery, driver, win(10, 12))
+    assert delivery.delivery_status == "Assigned"
+    assert a.active and a.assigned_at is not None
+    assert a.is_assigned_to("S001")
+    a.complete(driver.availability)
+    assert not a.active and driver.availability.is_free(win(10, 12))

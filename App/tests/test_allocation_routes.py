@@ -113,7 +113,7 @@ def test_allocate_confirm_success_and_history(client):
         "office_id": "O001", "delivery_id": d.delivery_id, "staff_id": "S001",
         "date": TOMORROW, "start": "10:00", "end": "12:00"}))
     assert "Allocated delivery" in page and "Jess Lee" in page
-    assert d.delivery_status == "allocated"
+    assert d.delivery_status == "Assigned"
     assert d.current_assignment().is_assigned_to("S001")
     assert state.history[-1][1] == "Assigned"
 

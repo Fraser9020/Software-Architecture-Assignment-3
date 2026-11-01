@@ -2,6 +2,7 @@
 
 ## What's where
 App/Models/Staff.py                Staff (abstract) -> OfficeStaff, DeliveryStaff
+App/Models/Delivery_Staff.py       re-export of DeliveryStaff for the pickup area's import
 App/Models/Staff_Availability.py   StaffAvailability + AvailabilityWindow (data-holder)
 App/Models/Delivery_Assignment.py  DeliveryAssignment + AssignmentStatus enum
 App/Dataholders/Time_Window.py     TimeWindow data-holder (date, start, end; overlaps/contains)
@@ -12,7 +13,7 @@ App/tests/                         30 pytest cases (models + routes)
 
 Changes to existing files:
 - App/Models/Delivery.py   added pickup_window, assignments, current_assignment(),
-                           set_assignment(), scheduled_window(); default status "accepted"
+                           set_assignment(), scheduled_window(); default status "accepted"; set_assignment() sets "Assigned"
                            (A2 status flow) instead of "being delivered"
 - App/app.py               dicts moved to state.py; blueprint registered; seed_staff()
 - App/templates/index.html links to the new pages
@@ -33,6 +34,9 @@ Changes to existing files:
 6. /history shows Assigned / Assignment withdrawn events                           (result)
 
 ## Hooks for other areas
+Names kept for the pickup area: DeliveryStaff.staff_id, name, employee_number;
+DeliveryAssignment.assignment_id, delivery_id, staff_id, assigned_at, active, is_assigned_to().
+
 Pickup/handover (Eugene) checks the reporting driver with
     delivery.current_assignment().is_assigned_to(staff_id)
 and on handover releases the time with
