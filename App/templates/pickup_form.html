@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>YOWD Delivery System</title>
+</head>
+<body>
+    <header>
+        <h1>YOWD Delivery System</h1>
+        <p>Delivery staff: pickup and payment</p>
+    </header>
+    <main>
+        <h2>Record pickup</h2>
+        <p>Delivery {{ delivery.delivery_id }} - status: <strong>{{ delivery.delivery_status }}</strong></p>
+        {% if invoice %}<p>Amount due: <strong>${{ "%.2f"|format(invoice.amount_due) }}</strong> ({{ invoice.status }})</p>{% endif %}
+
+        {% if errors %}
+        <ul style="color:red">
+            {% for e in errors %}<li>{{ e }}</li>{% endfor %}
+        </ul>
+        {% endif %}
+
+        <form action="/pickup/{{ delivery.delivery_id }}" method="POST">
+            <input type="hidden" name="staff_id" value="{{ staff_id }}">
+            <p><label><input type="checkbox" name="parcels_ok" value="yes" {% if values.parcels_ok %}checked{% endif %}>
+                All parcels checked and match the description</label></p>
+            <p><label>Parcel condition<br>
+                <input type="text" name="condition" value="{{ values.condition or '' }}"></label></p>
+            <p><label>Amount received ($)<br>
+                <input type="text" name="amount" value="{{ values.amount or '' }}"></label></p>
+            <p><label>Payment method<br>
+                <select name="method">
+                    <option value="">-- choose --</option>
+                    {% for m in methods %}<option value="{{ m }}" {% if values.method == m %}selected{% endif %}>{{ m }}</option>{% endfor %}
+                </select></label></p>
+            <button type="submit">Confirm pickup and payment</button>
+        </form>
+
+        <h3>History</h3>
+        <ul>{% for e in history.events %}<li>{{ e.record() }}</li>{% else %}<li>No events yet.</li>{% endfor %}</ul>
+        <p><a href="/pickup?staff_id={{ staff_id }}">Back</a></p>
+    </main>
+</body>
+</html>
