@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>YOWD Delivery System</title>
+</head>
+<body>
+    <header>
+        <h1>YOWD Delivery System</h1>
+        <p>Delivery staff: pickup and payment</p>
+    </header>
+    <main>
+        <h2>Deliveries to pick up</h2>
+        <form action="/pickup" method="GET">
+            <label>Who are you?
+                <select name="staff_id" onchange="this.form.submit()">
+                    <option value="">-- choose employee --</option>
+                    {% for id, staff in staff_members.items() %}
+                    <option value="{{ id }}" {% if id == staff_id %}selected{% endif %}>{{ staff.name }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+            <button type="submit">Show</button>
+        </form>
+
+        {% if staff_id %}
+        <h3>Assigned to you</h3>
+        {% if mine %}
+        <table border="1" cellpadding="4">
+            <tr><th>Delivery</th><th>Date</th><th>Status</th><th>Amount due</th><th></th></tr>
+            {% for row in mine %}
+            <tr>
+                <td>{{ row.delivery.delivery_id[:8] }}</td>
+                <td>{{ row.delivery.delivery_date }}</td>
+                <td>{{ row.delivery.delivery_status }}</td>
+                <td>{% if row.invoice %}${{ "%.2f"|format(row.invoice.amount_due) }}{% else %}no quote{% endif %}</td>
+                <td><a href="/pickup/{{ row.delivery.delivery_id }}?staff_id={{ staff_id }}">Record pickup</a></td>
+            </tr>
+            {% endfor %}
+        </table>
+        {% else %}
+        <p>No deliveries are assigned to you.</p>
+        {% endif %}
+        {% endif %}
+
+        <p>Deliveries are assigned by office staff on the <a href="/allocate">Allocate</a> page.</p>
+    </main>
+</body>
+</html>
