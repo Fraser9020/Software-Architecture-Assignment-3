@@ -1,5 +1,6 @@
-import os
-import sys
+﻿import os
+import sys 
+from pydantic import ValidationError
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 if BASE_DIR not in sys.path:
@@ -50,22 +51,75 @@ def create_quote(customer, order_request, parcels, pickupaddress, deliveryaddres
 
 #2 once submit order is clicked this function is called
 @app.route("/submit_order", methods=["POST"])
-def submit_order():
+def submit_order(): 
+
+
     # Get customer info
     firstname = (request.form.get("firstname") or "").strip()
     lastname = (request.form.get("lastname") or "").strip()
     email = (request.form.get("email") or "").strip()
     phone = (request.form.get("phone") or "").strip()
 
+    # Get address info
+    pickupstreet = (request.form.get("pickupstreet") or "").strip()
+    pickupsuburb = (request.form.get("pickupsuburb") or "").strip()
+    pickuppostcode = (request.form.get("pickuppostcode") or "").strip()
+
+    deliverystreet = (request.form.get("deliverystreet") or "").strip()
+    deliverysuburb = (request.form.get("deliverysuburb") or "").strip()
+    deliverypostcode = (request.form.get("deliverypostcode") or "").strip()
+
+
+    # validate info - collect every error so the user sees them all at once
+    errors = []
+
+    try:
+        # Validate input and create customer
+        customer = Customer(
+            firstname=firstname,
+            lastname=lastname,
+            email=email,
+            phone=phone
+        )
+    except ValidationError as e:
+        errors += e.errors()
+
+    try:
+        # Validate pick up address
+        pickupaddress = Delivery_Address(street=pickupstreet, suburb=pickupsuburb, postcode=pickuppostcode)
+    except ValidationError as e:
+        # Both addresses have the same field names, so label which one failed
+        for err in e.errors():
+            err["loc"] = ("pickup " + err["loc"][0],)
+            errors.append(err)
+
+    try:
+        # Validate delivery address
+        deliveryaddress = Delivery_Address(street=deliverystreet, suburb=deliverysuburb, postcode=deliverypostcode)
+    except ValidationError as e:
+        for err in e.errors():
+            err["loc"] = ("delivery " + err["loc"][0],)
+            errors.append(err)
+
+    if errors:
+        return render_template(
+            "create_order.html",
+            errors=errors,
+            form=request.form
+        )
+
+    #save customer (only once everything is valid)
+    customers[customer.customer_id] = customer
+
+
+
+
     # Get parcel info 
     weights = request.form.getlist("parcel_weight")
     dimensions = request.form.getlist("dimensions")
     fragiles = request.form.getlist("parcel_fragile")
 
-    # Create customer object 
-    customer = Customer(firstname, lastname, email, phone)
-    #save customer
-    customers[customer.customer_id] = customer 
+   
 
     
     #Once customer is created create order request and parcels associated with the customer
@@ -95,26 +149,14 @@ def submit_order():
     #save parcels on the order request
     order_request.parcels = parcels
 
-    #Create pick up and delivery address set order request to an address  
-
-    pickupstreet = (request.form.get("pickupstreet") or "").strip()
-    pickupsuburb = (request.form.get("pickupsuburb") or "").strip()
-    pickuppostcode = (request.form.get("pickuppostcode") or "").strip()
-
-    deliverystreet = (request.form.get("deliverystreet") or "").strip()
-    deliverysuburb = (request.form.get("deliverysuburb") or "").strip()
-    deliverypostcode = (request.form.get("deliverypostcode") or "").strip()
-
-    # Create pick up address 
-    pickupaddress = Delivery_Address( order_request.request_id,pickupstreet,pickupsuburb,pickuppostcode) 
+    #Link the validated addresses to the order request
 
     # save pick up address
+    pickupaddress.order_id = order_request.request_id
     order_request.pickup_address = pickupaddress
 
-    # Create the delivery address
-    deliveryaddress = Delivery_Address(order_request.request_id, deliverystreet, deliverysuburb, deliverypostcode)
-
     #save delivery address
+    deliveryaddress.order_id = order_request.request_id
     order_request.delivery_address = deliveryaddress
 
     # Verify customer and order request created
@@ -144,18 +186,34 @@ def submit_quote():
     # Get quote info entered by office staff
     request_id = (request.form.get("request_id") or "").strip()
     estimateddeliverytime = (request.form.get("estimateddeliverytime") or "").strip()
-    try:
-        deliveryfee = float(request.form.get("deliveryfee") or 0)
-    except ValueError:
-        return "Delivery fee must be a number", 400
+    # Pydantic turns this into a float and rejects anything that isn't a number
+    deliveryfee = (request.form.get("deliveryfee") or "").strip()
 
     # Quote must belong to an order request that exists
     order_request = order_requests.get(request_id)
     if order_request is None:
         return "Order request not found", 404
 
-    # Create quote linked to the order request
-    quote = Quote(request_id, deliveryfee, estimateddeliverytime)
+    # validate info and create quote linked to the order request
+    try:
+        quote = Quote(
+            request_id=request_id,
+            deliveryfee=deliveryfee,
+            estimateddeliverytime=estimateddeliverytime
+        )
+    except ValidationError as e:
+        # Re-show the quote page; the order details are all stored on the order request
+        return render_template(
+            "create_quote.html",
+            errors=e.errors(),
+            form=request.form,
+            customer=customers.get(order_request.customer_id),
+            order_request=order_request,
+            parcels=order_request.parcels,
+            pickupaddress=order_request.pickup_address,
+            deliveryaddress=order_request.delivery_address,
+        )
+
     #save quotes
     quotes[quote.quoteid]= quote
     order_request.status = "quoted"
@@ -236,11 +294,11 @@ def deny_quote():
     if quote.status != "pending":
         return f"This quote has already been {quote.status}", 400
 
-    # remove the quote and its order request
-    del quotes[quote_id]
-    order_requests.pop(quote.request_id, None)
+    
+    # do not remove change status to 
+    quote.status = "denied"
 
-    print("Quote denied:", quote_id)
+    print("Quote denied:", quote_id, quote.status)
 
     return redirect("/")
 

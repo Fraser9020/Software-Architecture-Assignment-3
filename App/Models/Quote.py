@@ -1,17 +1,28 @@
 ﻿import uuid
-from datetime import date, timedelta
+from datetime import date, timedelta 
+from pydantic import BaseModel, Field
 
-class Quote:
+class Quote(BaseModel):
 
-    # Attributes
-    def __init__(self, request_id, deliveryfee, estimateddeliverytime, status="pending"):
-       
-        self.request_id = request_id # Associate the quote with an order request
-        self.deliveryfee = deliveryfee
-        self.estimateddeliverytime = estimateddeliverytime
-        self.expiredate = date.today()+ timedelta(days=30)
-        self.status = status 
-        self.quoteid = str(uuid.uuid4())
+   
+    # Associate quote with an order request
+    request_id: str = Field(min_length=1)
+
+    deliveryfee: float = Field(ge=1, le=100000)
+
+   
+    estimateddeliverytime: str = Field(min_length=1)
+
+    
+    expiredate: date = Field(
+        default_factory=lambda: date.today() + timedelta(days=30)
+    )
+    status: str = "pending"
+
+    quoteid: str = Field(
+        default_factory=lambda: str(uuid.uuid4())
+    )
+
 
     # Responsibilities of quote
 
