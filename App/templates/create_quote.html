@@ -58,6 +58,17 @@
             </table>
         </fieldset>
 
+        {% if errors %}
+        <div class="error-box">
+            <p>Please fix the following:</p>
+            <ul>
+                {% for err in errors %}
+                    <li>{{ err.loc[0] }}: {{ err.msg }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
         <!-- Office staff enter the quote -->
         <form action="/submit_quote" method="POST">
 
@@ -69,13 +80,15 @@
 
                 <div class="field">
                     <label for="deliveryfee">Delivery Fee ($)</label>
-                    <input type="number" id="deliveryfee" name="deliveryfee" step="0.01" min="0" required>
+                    <input type="number" id="deliveryfee" name="deliveryfee" step="0.01" min="1"
+                        value="{{ form.deliveryfee if form else '' }}" required>
                 </div>
 
                 <div class="field">
                     <label for="estimateddeliverytime">Estimated Delivery Time</label>
                     <input type="text" id="estimateddeliverytime" name="estimateddeliverytime"
-                        placeholder="e.g. 2-3 business days" required>
+                        placeholder="e.g. 2-3 business days"
+                        value="{{ form.estimateddeliverytime if form else '' }}" required>
                 </div>
             </fieldset>
 

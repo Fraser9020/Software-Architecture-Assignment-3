@@ -1,20 +1,17 @@
 ﻿import uuid
+from pydantic import BaseModel, EmailStr, Field
 
 
-class Customer:
-    # Attributes of customer
-    def __init__(self, firstname, lastname, email, phone, ):
-        self.firstname = firstname
-        self.lastname = lastname
-        self.email = email
-        self.phone = phone
+class Customer(BaseModel):
 
+    firstname: str = Field(min_length=1)
+    lastname: str = Field(min_length=1)
+    email: EmailStr
+    phone:  str = Field(pattern=r"^\d{10}$")
 
-        # generate customer id using uuid4
-        self.customer_id = str(uuid.uuid4())
-
-  
+    customer_id: str = Field(
+        default_factory=lambda: str(uuid.uuid4())
+    )
 
     def accept_quote(self, order):
-        # Logic to accept an order
         pass
