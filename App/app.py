@@ -103,6 +103,27 @@ def submit_order():
             err["loc"] = ("delivery " + err["loc"][0],)
             errors.append(err)
 
+    # Get parcel info
+    weights = request.form.getlist("parcel_weight")
+    dimensions = request.form.getlist("dimensions")
+    fragiles = request.form.getlist("parcel_fragile")
+
+    # Validate parcels
+    parcels = []
+    for number, (weight, dimension, fragile) in enumerate(zip(weights, dimensions, fragiles), start=1):
+        try:
+            parcel = Parcel(
+                weight=(weight or "").strip(),
+                dimension=(dimension or "").strip(),
+                fragile=str(fragile).strip().lower() == "true",
+            )
+            parcels.append(parcel)
+        except ValidationError as e:
+            # Label which parcel failed when there are several
+            for err in e.errors():
+                err["loc"] = (f"parcel {number} " + err["loc"][0],)
+                errors.append(err)
+
     if errors:
         return render_template(
             "create_order.html",
@@ -110,43 +131,27 @@ def submit_order():
             form=request.form
         )
 
-    #save customer (only once everything is valid)
-    customers[customer.customer_id] = customer
-
-
-
-
-    # Get parcel info 
-    weights = request.form.getlist("parcel_weight")
-    dimensions = request.form.getlist("dimensions")
-    fragiles = request.form.getlist("parcel_fragile")
-
-   
-
-    
     #Once customer is created create order request and parcels associated with the customer
 
     #Create order request 
 
-    number_of_parcels = len(weights)   
+    number_of_parcels = len(parcels)
     print("Customer ID:", customer.customer_id)
     customer_id = customer.customer_id  # Get the customer ID from the created customer object
-    order_request = OrderRequest.create(customer.customer_id, number_of_parcels=number_of_parcels) 
+    try:
+        order_request = OrderRequest.create(customer.customer_id, number_of_parcels=number_of_parcels)
+    except ValidationError as e:
+        return render_template(
+            "create_order.html",
+            errors=e.errors(),
+            form=request.form
+        )
 
     print("Order request created with ID:", order_request.customer_id, order_request.request_id,customer.customer_id)
-    #save order request  
+    #save customer and order request (only once everything is valid)
+    customers[customer.customer_id] = customer
     order_requests[order_request.request_id] = order_request
 
-
-    # Create parcels
-    parcels = []
-    for weight, dimension, fragile in zip(weights, dimensions, fragiles):
-        parcel = Parcel(
-            (weight or "").strip(),
-            (dimension or "").strip(),
-            str(fragile).strip().lower() == "true",
-        )
-        parcels.append(parcel)
 
     #save parcels on the order request
     order_request.parcels = parcels

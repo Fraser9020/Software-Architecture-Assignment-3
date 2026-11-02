@@ -1,19 +1,32 @@
 import uuid
-from datetime import datetime 
+from datetime import datetime
+from typing import Literal, Optional
+from pydantic import BaseModel, ConfigDict, Field
+
+from Models.Parcel import Parcel
+from Dataholders.Address import Delivery_Address
 
 
-class OrderRequest: 
+class OrderRequest(BaseModel):
 
-    #Attributes of order request
-    def __init__(self, customer_id,number_of_parcels=0,submittedAt=None, status=None, ): 
-        
-        self.customer_id = customer_id # Associate the order request with a customer
-        self.number_of_parcels = number_of_parcels 
-        self.request_id = str(uuid.uuid4())
-        self.submittedAt = submittedAt if submittedAt is not None else datetime.now()
-        self.status = status if status is not None else "pending"
-         
-        
+    # Parcel is a plain class, and status changes later in the flow should be checked too
+    model_config = ConfigDict(arbitrary_types_allowed=True, validate_assignment=True)
+
+    # Associate the order request with a customer
+    customer_id: str = Field(min_length=1)
+    number_of_parcels: int = Field(ge=1, le=50)
+
+    request_id: str = Field(
+        default_factory=lambda: str(uuid.uuid4())
+    )
+    submittedAt: datetime = Field(default_factory=datetime.now)
+    status: Literal["pending", "quoted", "accepted"] = "pending"
+
+    # Set after the order request is created, once parcels and addresses are validated
+    parcels: list[Parcel] = Field(default_factory=list)
+    pickup_address: Optional[Delivery_Address] = None
+    delivery_address: Optional[Delivery_Address] = None
+
 
     def to_dict(self):
         return {
@@ -27,13 +40,7 @@ class OrderRequest:
     @classmethod
     def create(cls, customer_id, number_of_parcels):
         # Usage: OrderRequest.create(customer_id, number_of_parcels=...)
-        return cls(customer_id, number_of_parcels=int(number_of_parcels))
+        return cls(customer_id=customer_id, number_of_parcels=number_of_parcels)
 
 
     #Responsibilities of order request
-
-
-    
-
-    #Responsibilities of order request 
-

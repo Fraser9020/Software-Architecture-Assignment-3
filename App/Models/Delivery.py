@@ -1,9 +1,11 @@
 import uuid
+from typing import ClassVar, Optional
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from Dataholders.Time_Window import TimeWindow
 
 
-class Delivery:
+class Delivery(BaseModel):
     """A committed delivery created when a quote is accepted.
 
     Status flow (A2 §5.2): accepted -> Assigned -> picked up -> in transit
@@ -11,15 +13,33 @@ class Delivery:
     of ALLOCATABLE.
     """
 
-    ALLOCATABLE = ("accepted", "allocation required")   # compared lower-case
+    # TimeWindow is a dataclass, and status changes later in the flow should be checked too
+    model_config = ConfigDict(arbitrary_types_allowed=True, validate_assignment=True)
 
-    def __init__(self, request_id, delivery_date, delivery_status="accepted"):
-        self.request_id = request_id  # Associate the delivery with an order request
-        self.delivery_date = delivery_date
-        self.delivery_status = delivery_status
-        self.delivery_id = str(uuid.uuid4())
-        self.pickup_window: TimeWindow | None = None   # set at allocation
-        self.assignments = []                           # history, one current
+    ALLOCATABLE: ClassVar[tuple] = ("accepted", "allocation required")   # compared lower-case
+    STATUSES: ClassVar[tuple] = ALLOCATABLE + ("assigned", "picked up", "in transit", "delivered")
+
+    request_id: str = Field(min_length=1)  # Associate the delivery with an order request
+    delivery_date: str = Field(min_length=1)
+    delivery_status: str = "accepted"
+    delivery_id: str = Field(
+        default_factory=lambda: str(uuid.uuid4())
+    )
+    pickup_window: Optional[TimeWindow] = None   # set at allocation
+    assignments: list = Field(default_factory=list)   # history, one current
+
+    # Keep Delivery(request_id, delivery_date, status) working for existing callers
+    def __init__(self, request_id, delivery_date, delivery_status="accepted", **data):
+        super().__init__(request_id=request_id, delivery_date=delivery_date,
+                         delivery_status=delivery_status, **data)
+
+    @field_validator("delivery_status")
+    @classmethod
+    def check_status(cls, value):
+        # Areas use different casing ("Assigned", "picked up"), so compare lower-case
+        if value.lower() not in cls.STATUSES:
+            raise ValueError(f"Status must be one of: {', '.join(cls.STATUSES)}")
+        return value
 
     def __str__(self):
         return (f"Delivery ID: {self.delivery_id}, Request ID: {self.request_id}, "
