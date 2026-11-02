@@ -18,6 +18,7 @@ from Dataholders.Address import Delivery_Address
 # Shared in-memory stores (see state.py) so every area sees the same objects
 from state import customers, order_requests, quotes, deliveries
 from allocation import allocation_bp, seed_staff
+from pickup_routes import pickup_bp
 
 
 
@@ -28,6 +29,7 @@ app = Flask(
     static_folder=os.path.join(BASE_DIR, "static"),
 )
 app.register_blueprint(allocation_bp)   # staff allocation area (Sam)
+app.register_blueprint(pickup_bp)       # pickup and payment area (Eugene)
 seed_staff()
 
 #1 Renders the page to create an order. 
