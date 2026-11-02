@@ -17,6 +17,18 @@
     <main>
         <h2>Create an Order Request</h2>
 
+
+        
+                    {% if errors %}
+            <div class="error-box">
+                <p>Please fix the following:</p>
+                <ul>
+                    {% for err in errors %}
+                        <li>{{ err.loc[0] }}: {{ err.msg }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
         <form  action="/submit_order" method="POST">
 
             <fieldset>
@@ -24,54 +36,59 @@
 
                 <div class="field">
                     <label for="firstname">First Name</label>
-                    <input type="text" id="firstname" name="firstname" required>
+                    <input type="text" id="firstname" name="firstname" pattern="[^\d]*"
+                        value="{{ form.firstname if form else '' }}" required>
                 </div>
 
                 <div class="field">
                         <label for="lastname">Last Name</label>
-                        <input type="text" id="lastname" name="lastname" required>
+                        <input type="text" id="lastname" name="lastname"  pattern="[^\d]*" value="{{ form.lastname if form else '' }}" required
+                        >
+
                     </div>
 
                 <div class="field">
                     <label for="email">Email</label>
-                    <input type="email" id="email" name="email" required>
+                    <input type="email" id="email" name="email" value="{{ form.email if form else '' }}"required>
                 </div>
 
                 <div class="field">
                     <label for="phone">Phone</label>
-                    <input type="tel" id="phone" name="phone" required>
+                    <input type="tel" pattern="\d{10}" id = "phone" name= "phone" maxlength="10" value="{{ form.phone if form else '' }}" required>   
                 </div>
 
                <div class="field">
                         <label for="pickupstreet">Pickup Street</label>
-                        <input type="text" id="pickupstreet" name="pickupstreet" required>
+                        <input type="text" id="pickupstreet"  name="pickupstreet" value="{{ form.pickupstreet if form else '' }}" required> 
+
+                        
                     </div>
 
                     <div class="field">
                         <label for="pickupsuburb">Pickup Suburb</label>
-                        <input type="text" id="pickupsuburb" name="pickupsuburb" required>
+                        <input type="text" id="pickupsuburb"  name="pickupsuburb"  value="{{ form.pickupsuburb if form else '' }}" required>
                     </div>
 
                     <div class="field">
                         <label for="pickuppostcode">Pickup Postcode</label>
                         <input type="text" id="pickuppostcode" name="pickuppostcode"
-                            inputmode="numeric" pattern="[0-9]{4}" maxlength="4" required>
+                            inputmode="numeric" pattern="[0-9]{4}" maxlength="4"  value="{{ form.pickuppostcode if form else '' }}"required>
                     </div>
 
                     <div class="field">
                         <label for="deliverystreet">Delivery Street</label>
-                        <input type="text" id="deliverystreet" name="deliverystreet" required>
+                        <input type="text" id="deliverystreet" name="deliverystreet" value="{{ form.deliverystreet if form else '' }}" required>
                     </div>
 
                     <div class="field">
                         <label for="deliverysuburb">Delivery Suburb</label>
-                        <input type="text" id="deliverysuburb" name="deliverysuburb" required>
+                        <input type="text" id="deliverysuburb" name="deliverysuburb" value="{{ form.deliverysuburb if form else '' }}" required>
                     </div>
 
                     <div class="field">
                         <label for="deliverypostcode">Delivery Postcode</label>
                         <input type="text" id="deliverypostcode" name="deliverypostcode"
-                            inputmode="numeric" pattern="[0-9]{4}" maxlength="4" required>
+                            inputmode="numeric" pattern="[0-9]{4}" maxlength="4" value="{{ form.deliverypostcode if form else '' }}" required>
                     </div>
                 
                 <h2>Add parcel to Delivery</h2>
@@ -79,10 +96,12 @@
                     <fieldset class="parcel" method="post" action="/submit_order">
 
                         <label for="weight">Weight (kg)</label>
-                            <input type="number" id="weight" name="parcel_weight" step="0.01" required>
+                            <input type="number" id="weight" name="parcel_weight" step="0.01" placeholder="0.01" max="200" min="0.1"required>
 
                         <label for="dimensions">Dimensions (L x W x H in cm)</label>
-                            <input type="text" id="dimensions" name="dimensions" required>
+                            <input type="text" id="dimensions" placeholder ="12.5 x 10 x 5" pattern= ^\d+(\.\d+)?\s*x\s*\d+(\.\d+)?\s*x\s*\d+(\.\d+)?$ name="dimensions" required>
+
+
 
                         <label for="fragile">Fragile</label>
                             <select id="fragile" name="parcel_fragile" required>
@@ -95,8 +114,14 @@
                 </div>
 
                 <button type="button" id="add-parcel">Add another parcel</button>
+                
 
-                <script>
+
+
+                <script> 
+
+
+
                     const list = document.getElementById("Add_Parcel_to_Delivery");
 
                     document.getElementById("add-parcel").addEventListener("click", function () {
@@ -116,7 +141,12 @@
                         event.target.closest(".parcel").remove();
                     }
                     }); 
-                   
+                    
+
+                    
+                        
+
+
                     //send over the number of parcels to the order request form
                     
                     function sendParcelCountToOrderRequestForm() {
