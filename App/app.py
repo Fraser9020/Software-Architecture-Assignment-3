@@ -1,4 +1,4 @@
-﻿"""Flask application: the order request and quote routes."""
+"""Flask application: the order request and quote routes."""
 import os
 import sys
 
@@ -159,7 +159,6 @@ def submit_order():
     # Once customer is created create order request and parcels associated with the customer
 
     # Create order request, or keep the same IDs when editing
-    print("Customer ID:", customer.customer_id)
     try:
         if order_request is None:
             order_request = OrderRequest.create(
@@ -176,22 +175,6 @@ def submit_order():
     # Save customer and order request (only once everything is valid)
     customers[customer.customer_id] = customer
     order_requests[order_request.request_id] = order_request
-
-    # Verify customer and order request created
-    print("Customer created!")
-    print("Name:", customer.first_name, customer.last_name)
-    print("Customer ID:", customer.customer_id)
-    print("Order request created!")
-    print("Number of Parcels:", order_request.number_of_parcels)
-    print("Request ID:", order_request.request_id)
-
-    # Verify parcels created
-    for parcel in parcels:
-        print("Parcel created!")
-        print("Weight:", parcel.weight)
-        print("Dimension:", parcel.dimension)
-        print("Fragile:", parcel.fragile)
-        print("Parcel ID:", parcel.id)
 
     # The customer reviews it before it is sent. Redirect so a refresh can't create a second order
     return redirect(url_for("review_order_request", request_id=order_request.request_id))
@@ -222,8 +205,6 @@ def send_order_request():
         order_request.send()
     except ValueError as e:
         return str(e), 400
-
-    print("Order request sent:", order_request.request_id)
 
     return create_quote(
         customers.get(order_request.customer_id),
@@ -294,8 +275,6 @@ def delete_order_request():
     customers.pop(order_request.customer_id, None)
     del order_requests[order_request.request_id]
 
-    print("Order request deleted:", order_request.request_id)
-
     return render_template("delete_order_request.html", deleted=True)
 
 
@@ -336,20 +315,6 @@ def submit_quote():
     # Save quotes
     quotes[quote.quote_id] = quote
 
-    print("Quote created!")
-    print("Quote ID:", quote.quote_id)
-    print("Request ID:", quote.request_id)
-    print("Delivery Fee:", quote.delivery_fee)
-    print("Estimated Delivery Time:", quote.estimated_delivery_time)
-    print("Expires:", quote.expiry_date)
-
-    # Office staff would call accept
-
-    # f"Quote created successfully! Quote ID: {quote.quote_id}<br>"
-    # f"For order request: {quote.request_id}<br>"
-    # f"Delivery fee: ${quote.delivery_fee:.2f}<br>"
-    # f"Estimated delivery time: {quote.estimated_delivery_time}<br>"
-    # f"Quote valid until: {quote.expiry_date.strftime('%d/%m/%Y')}"
     return render_template("accept_quote.html", quote=quote, order_request=order_request)
 
 
@@ -373,13 +338,8 @@ def accept_quote():
     except ValueError as e:
         return str(e), 400
 
-    print("Quote accepted:", quote.quote_id)
-
     # Save delivery
     deliveries[delivery.delivery_id] = delivery
-
-    print("Delivery created!")
-    print(delivery)
 
     return render_template("accepted_quote.html", quote=quote, delivery=delivery)
 
@@ -397,8 +357,6 @@ def deny_quote():
         quote.deny()
     except ValueError as e:
         return str(e), 400
-
-    print("Quote denied:", quote_id, quote.status)
 
     return render_template("denied_quote.html", quote=quote)
 

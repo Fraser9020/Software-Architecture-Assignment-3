@@ -1,4 +1,4 @@
-﻿"""Customer: the person making an order request."""
+"""Customer: the person making an order request."""
 import uuid
 from pydantic import BaseModel, EmailStr, Field
 

@@ -90,5 +90,5 @@ def test_bad_parcel_weight_is_rejected(client, weight):
 
 def test_order_without_parcels_is_rejected(client):
     order = dict(GOOD_ORDER, parcel_weight=[], dimensions=[], parcel_fragile=[])
-    page = client.post("/submit_order", data=order)
+    client.post("/submit_order", data=order)
     assert state.order_requests == {}
