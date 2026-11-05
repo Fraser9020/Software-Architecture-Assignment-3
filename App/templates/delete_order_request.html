@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>YOWD Delivery System</title>
+</head>
+<body>
+    <header>
+        <h1>YOWD Delivery System</h1>
+    </header>
+    <main>
+        {% if deleted %}
+            <h2>Your order request has been deleted</h2>
+            <a href="/create_order.html">Create a new order request</a>
+            <a href="/">Back to home</a>
+        {% else %}
+            <h2>Delete this order request?</h2>
+            <p>Request ID: {{ order_request.request_id }}</p>
+            <p>This cannot be undone.</p>
+
+            <form method="post" action="/delete_order_request">
+                <input type="hidden" name="request_id" value="{{ order_request.request_id }}">
+                <button type="submit">Yes, Delete Order Request</button>
+            </form>
+            <a href="{{ url_for('review_order_request', request_id=order_request.request_id) }}">Go back</a>
+        {% endif %}
+    </main>
+</body>
+</html>

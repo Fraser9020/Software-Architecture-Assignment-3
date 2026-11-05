@@ -31,6 +31,11 @@
             {% endif %}
         <form  action="/submit_order" method="POST">
 
+            <!-- Hidden: only set when editing, tells Flask WHICH order request to update -->
+            {% if form and form.request_id %}
+            <input type="hidden" name="request_id" value="{{ form.request_id }}">
+            {% endif %}
+
             <fieldset>
                 <legend>Customer Information</legend>
 
@@ -93,24 +98,26 @@
                 
                 <h2>Add parcel to Delivery</h2>
                  <div id="Add_Parcel_to_Delivery">
+                    {% for parcel in parcel_rows or [{}] %}
                     <fieldset class="parcel" method="post" action="/submit_order">
 
                         <label for="weight">Weight (kg)</label>
-                            <input type="number" id="weight" name="parcel_weight" step="0.01" placeholder="0.01" max="200" min="0.1"required>
+                            <input type="number" id="weight" name="parcel_weight" step="0.01" placeholder="0.01" max="200" min="0.1" value="{{ parcel.weight }}" required>
 
                         <label for="dimensions">Dimensions (L x W x H in cm)</label>
-                            <input type="text" id="dimensions" placeholder ="12.5 x 10 x 5" pattern= ^\d+(\.\d+)?\s*x\s*\d+(\.\d+)?\s*x\s*\d+(\.\d+)?$ name="dimensions" required>
+                            <input type="text" id="dimensions" placeholder ="12.5 x 10 x 5" pattern= ^\d+(\.\d+)?\s*x\s*\d+(\.\d+)?\s*x\s*\d+(\.\d+)?$ name="dimensions" value="{{ parcel.dimension }}" required>
 
 
 
                         <label for="fragile">Fragile</label>
                             <select id="fragile" name="parcel_fragile" required>
                                 <option value="false">No</option>
-                                <option value="true">Yes</option>
+                                <option value="true" {{ "selected" if parcel.fragile }}>Yes</option>
                             </select>
 
                         <button type="button" class="remove-btn">Remove</button>
                     </fieldset>
+                    {% endfor %}
                 </div>
 
                 <button type="button" id="add-parcel">Add another parcel</button>
@@ -131,6 +138,7 @@
                         copy.querySelectorAll("input").forEach(function (box) {
                             box.value = "";                          // clear what was typed in the original
                         });
+                        copy.querySelector("select").value = "false";
 
                         list.appendChild(copy);
                     });
@@ -173,9 +181,12 @@
            
 
             <button type="submit" id="submit-order">
-            Submit Order Request
+            Review Order Request
                 </button>
         </form>
+        {% if form and form.request_id %}
+        <a href="{{ url_for('review_order_request', request_id=form.request_id) }}">Go back without saving changes</a>
+        {% endif %}
     </main>
 
 </body>
