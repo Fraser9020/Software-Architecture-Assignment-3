@@ -34,19 +34,23 @@ def _parse_window(form):
 
 
 def _delivery_staff():
+    """Return every delivery staff member."""
     return [m for m in staff.values() if isinstance(m, DeliveryStaff)]
 
 
 def _office_staff():
+    """Return every office staff member."""
     return [m for m in staff.values() if isinstance(m, OfficeStaff)]
 
 
 def _allocatable():
+    """Return the deliveries waiting for a staff member to be allocated."""
     return [d for d in deliveries.values()
             if d.delivery_status.lower() in d.ALLOCATABLE]
 
 
 def _allocated():
+    """Return the deliveries that currently have an assignment."""
     return [d for d in deliveries.values() if d.current_assignment()]
 
 
@@ -54,6 +58,7 @@ def _allocated():
 
 @allocation_bp.route("/staff")
 def staff_page():
+    """Show the staff records page."""
     return render_template("staff.html", staff=staff.values(),
                            message=request.args.get("message"),
                            error=request.args.get("error"))
@@ -61,6 +66,7 @@ def staff_page():
 
 @allocation_bp.route("/staff/create", methods=["POST"])
 def create_staff():
+    """Create an office or delivery staff member from the form."""
     role = request.form.get("role", "")
     staff_id = request.form.get("staff_id", "").strip()
     if role not in ("office", "delivery"):
@@ -79,6 +85,7 @@ def create_staff():
 
 @allocation_bp.route("/staff/deactivate", methods=["POST"])
 def deactivate_staff():
+    """Deactivate a staff member, keeping their record."""
     member = staff.get(request.form.get("staff_id", ""))
     if member is None:
         return redirect(url_for(".staff_page", error="Staff member not found."))
@@ -93,6 +100,7 @@ def deactivate_staff():
 
 @allocation_bp.route("/availability")
 def availability_page():
+    """Show the delivery staff availability page."""
     return render_template("availability.html", drivers=_delivery_staff(),
                            message=request.args.get("message"),
                            error=request.args.get("error"))
@@ -100,6 +108,7 @@ def availability_page():
 
 @allocation_bp.route("/availability/add", methods=["POST"])
 def add_availability():
+    """Add an availability window for an active delivery staff member."""
     member = staff.get(request.form.get("staff_id", ""))
     if not isinstance(member, DeliveryStaff) or not member.is_active():
         return redirect(url_for(".availability_page",
@@ -115,6 +124,7 @@ def add_availability():
 
 @allocation_bp.route("/availability/remove", methods=["POST"])
 def remove_availability():
+    """Remove an availability window from a delivery staff member."""
     member = staff.get(request.form.get("staff_id", ""))
     if not isinstance(member, DeliveryStaff):
         return redirect(url_for(".availability_page",
@@ -132,6 +142,7 @@ def remove_availability():
 
 @allocation_bp.route("/allocate")
 def allocate_page():
+    """Show the deliveries awaiting allocation and those already allocated."""
     return render_template("allocate.html",
                            awaiting=_allocatable(), allocated=_allocated(),
                            office=_office_staff(), drivers=_delivery_staff(),
@@ -189,6 +200,7 @@ def confirm_allocation():
 
 @allocation_bp.route("/allocate/reallocate", methods=["POST"])
 def reallocate():
+    """Move a delivery to a new staff member, recording the reason."""
     office = staff.get(request.form.get("office_id", ""))
     delivery = deliveries.get(request.form.get("delivery_id", ""))
     new_staff = staff.get(request.form.get("staff_id", ""))
@@ -214,6 +226,7 @@ def reallocate():
 
 @allocation_bp.route("/history")
 def history_page():
+    """Show the delivery event history."""
     return render_template("history.html", events=history)
 
 

@@ -27,7 +27,7 @@ def get_invoice(delivery):
         return invoices[delivery.delivery_id]
     for quote in quotes.values():
         if quote.request_id == delivery.request_id and quote.status == "accepted":
-            invoice = Invoice(delivery.delivery_id, quote.deliveryfee)
+            invoice = Invoice(delivery.delivery_id, quote.delivery_fee)
             invoices[delivery.delivery_id] = invoice
             return invoice
     return None

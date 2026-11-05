@@ -14,6 +14,7 @@ class Staff(ABC):
 
     def __init__(self, staff_id: str, name: str, phone: str,
                  start_date: date | None = None) -> None:
+        """Create an active staff record. Raises ValueError if a field is blank."""
         if not staff_id.strip():
             raise ValueError("Staff ID cannot be blank.")
         if not name.strip():
@@ -28,12 +29,15 @@ class Staff(ABC):
 
     @property
     def role(self) -> str:
+        """Return the staff type, e.g. OfficeStaff."""
         return type(self).__name__
 
     def is_active(self) -> bool:
+        """Return True until the staff member has an end date."""
         return self.end_date is None
 
     def deactivate(self, end_date: date | None = None) -> None:
+        """Set the end date. Raises ValueError if already inactive."""
         if not self.is_active():
             raise ValueError(f"{self.staff_id} is already inactive.")
         self.end_date = end_date or date.today()
@@ -87,16 +91,20 @@ class DeliveryStaff(Staff):
     def __init__(self, staff_id: str, name: str, phone: str,
                  start_date: date | None = None,
                  employee_number: str | None = None) -> None:
+        """Create a delivery staff member with no availability yet."""
         super().__init__(staff_id, name, phone, start_date)
         self.employee_number = employee_number or staff_id
         self.availability = StaffAvailability(staff_id)
 
     def declare_availability(self, window: TimeWindow) -> None:
+        """Add a window when this staff member can work."""
         self.availability.add_window(window)
 
     def remove_availability(self, window: TimeWindow) -> None:
+        """Remove a declared availability window."""
         self.availability.remove_window(window)
 
     def deactivate(self, end_date: date | None = None) -> None:
+        """Deactivate the staff member and drop their unreserved future windows."""
         super().deactivate(end_date)
         self.availability.withdraw_future(self.end_date)

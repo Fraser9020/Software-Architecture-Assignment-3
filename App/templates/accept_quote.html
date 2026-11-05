@@ -19,23 +19,23 @@
 
             <fieldset>
                 <legend>Quote Details</legend>
-                <p><strong>Quote ID:</strong> {{ quote.quoteid }}</p>
+                <p><strong>Quote ID:</strong> {{ quote.quote_id }}</p>
                 <p><strong>Request ID:</strong> {{ quote.request_id }}</p>
-                <p><strong>Delivery Fee:</strong> ${{ "%.2f"|format(quote.deliveryfee) }}</p>
-                <p><strong>Estimated Delivery Time:</strong> {{ quote.estimateddeliverytime }} days</p>
-                <p><strong>Valid Until:</strong> {{ quote.expiredate.strftime("%d/%m/%Y") }}</p>
+                <p><strong>Delivery Fee:</strong> ${{ "%.2f"|format(quote.delivery_fee) }}</p>
+                <p><strong>Estimated Delivery Time:</strong> {{ quote.estimated_delivery_time }} days</p>
+                <p><strong>Valid Until:</strong> {{ quote.expiry_date.strftime("%d/%m/%Y") }}</p>
                 <p><strong>Status:</strong> {{ quote.status }}</p>
             </fieldset>
 
             <form action="/accept_quote" method="POST">
                 <!-- Hidden: tells Flask WHICH quote is being accepted -->
-                <input type="hidden" name="quote_id" value="{{ quote.quoteid }}">
+                <input type="hidden" name="quote_id" value="{{ quote.quote_id }}">
                 <button type="submit">Accept Quote</button>
             </form> 
             <!-- Deny quote -->
             <form action="/deny_quote" method="POST">
                 <!-- Hidden: tells Flask WHICH quote is being denied -->
-                <input type="hidden" name="quote_id" value="{{ quote.quoteid }}">
+                <input type="hidden" name="quote_id" value="{{ quote.quote_id }}">
                 <button type="submit">Deny Quote</button>
             </form>
 

@@ -10,6 +10,7 @@ pickup_bp = Blueprint("pickup", __name__)
 
 
 def delivery_staff_members():
+    """Return the delivery staff, keyed by staff ID."""
     return {sid: s for sid, s in staff.items() if isinstance(s, DeliveryStaff)}
 
 
@@ -28,17 +29,20 @@ def pickup_list():
 
 @pickup_bp.route("/pickup/<delivery_id>")
 def pickup_form(delivery_id):
+    """Show the pickup form for a delivery."""
     delivery = deliveries.get(delivery_id)
     if delivery is None:
         return "Delivery not found", 404
     return render_template("pickup_form.html", delivery=delivery,
-                           invoice=get_invoice(delivery), staff_id=request.args.get("staff_id", ""),
+                           invoice=get_invoice(delivery),
+                           staff_id=request.args.get("staff_id", ""),
                            methods=PAYMENT_METHODS, errors=[], values={},
                            history=get_history(delivery))
 
 
 @pickup_bp.route("/pickup/<delivery_id>", methods=["POST"])
 def pickup_submit(delivery_id):
+    """Record the pickup and payment, or re-show the form with the errors."""
     delivery = deliveries.get(delivery_id)
     if delivery is None:
         return "Delivery not found", 404

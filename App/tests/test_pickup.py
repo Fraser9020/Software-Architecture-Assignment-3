@@ -17,9 +17,9 @@ DAY = date.today() + timedelta(days=1)
 def make_delivery(office, driver, fee, number):
     """An accepted quote and a delivery, allocated to the driver."""
     request_id = f"request-{number}"
-    quote = Quote(request_id=request_id, deliveryfee=fee,
-                  estimateddeliverytime=5, status="accepted")
-    state.quotes[quote.quoteid] = quote
+    quote = Quote(request_id=request_id, delivery_fee=fee,
+                  estimated_delivery_time=5, status="accepted")
+    state.quotes[quote.quote_id] = quote
     delivery = Delivery(request_id, "2026-11-10")
     state.deliveries[delivery.delivery_id] = delivery
     return delivery
@@ -105,7 +105,8 @@ def test_unallocated_delivery_cannot_be_picked_up(setup):
 def test_pages_work_end_to_end(setup):
     delivery, _, driver, client = setup
     assert b"Record pickup" in client.get(f"/pickup?staff_id={driver.staff_id}").data
-    assert client.get(f"/pickup/{delivery.delivery_id}?staff_id={driver.staff_id}").status_code == 200
+    url = f"/pickup/{delivery.delivery_id}?staff_id={driver.staff_id}"
+    assert client.get(url).status_code == 200
     data = {"staff_id": driver.staff_id, "condition": "Good", "amount": "40",
             "method": "Cash", "parcels_ok": "yes"}
     assert b"rejected" in client.post(f"/pickup/{delivery.delivery_id}", data=data).data

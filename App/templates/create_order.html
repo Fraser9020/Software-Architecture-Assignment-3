@@ -40,14 +40,14 @@
                 <legend>Customer Information</legend>
 
                 <div class="field">
-                    <label for="firstname">First Name</label>
-                    <input type="text" id="firstname" name="firstname" pattern="[^\d]*"
-                        value="{{ form.firstname if form else '' }}" required>
+                    <label for="first_name">First Name</label>
+                    <input type="text" id="first_name" name="first_name" pattern="[^\d]*"
+                        value="{{ form.first_name if form else '' }}" required>
                 </div>
 
                 <div class="field">
-                        <label for="lastname">Last Name</label>
-                        <input type="text" id="lastname" name="lastname"  pattern="[^\d]*" value="{{ form.lastname if form else '' }}" required
+                        <label for="last_name">Last Name</label>
+                        <input type="text" id="last_name" name="last_name"  pattern="[^\d]*" value="{{ form.last_name if form else '' }}" required
                         >
 
                     </div>
@@ -63,37 +63,37 @@
                 </div>
 
                <div class="field">
-                        <label for="pickupstreet">Pickup Street</label>
-                        <input type="text" id="pickupstreet"  name="pickupstreet" value="{{ form.pickupstreet if form else '' }}" required> 
+                        <label for="pickup_street">Pickup Street</label>
+                        <input type="text" id="pickup_street"  name="pickup_street" value="{{ form.pickup_street if form else '' }}" required> 
 
                         
                     </div>
 
                     <div class="field">
-                        <label for="pickupsuburb">Pickup Suburb</label>
-                        <input type="text" id="pickupsuburb"  name="pickupsuburb"  value="{{ form.pickupsuburb if form else '' }}" required>
+                        <label for="pickup_suburb">Pickup Suburb</label>
+                        <input type="text" id="pickup_suburb"  name="pickup_suburb"  value="{{ form.pickup_suburb if form else '' }}" required>
                     </div>
 
                     <div class="field">
-                        <label for="pickuppostcode">Pickup Postcode</label>
-                        <input type="text" id="pickuppostcode" name="pickuppostcode"
-                            inputmode="numeric" pattern="[0-9]{4}" maxlength="4"  value="{{ form.pickuppostcode if form else '' }}"required>
+                        <label for="pickup_postcode">Pickup Postcode</label>
+                        <input type="text" id="pickup_postcode" name="pickup_postcode"
+                            inputmode="numeric" pattern="[0-9]{4}" maxlength="4"  value="{{ form.pickup_postcode if form else '' }}"required>
                     </div>
 
                     <div class="field">
-                        <label for="deliverystreet">Delivery Street</label>
-                        <input type="text" id="deliverystreet" name="deliverystreet" value="{{ form.deliverystreet if form else '' }}" required>
+                        <label for="delivery_street">Delivery Street</label>
+                        <input type="text" id="delivery_street" name="delivery_street" value="{{ form.delivery_street if form else '' }}" required>
                     </div>
 
                     <div class="field">
-                        <label for="deliverysuburb">Delivery Suburb</label>
-                        <input type="text" id="deliverysuburb" name="deliverysuburb" value="{{ form.deliverysuburb if form else '' }}" required>
+                        <label for="delivery_suburb">Delivery Suburb</label>
+                        <input type="text" id="delivery_suburb" name="delivery_suburb" value="{{ form.delivery_suburb if form else '' }}" required>
                     </div>
 
                     <div class="field">
-                        <label for="deliverypostcode">Delivery Postcode</label>
-                        <input type="text" id="deliverypostcode" name="deliverypostcode"
-                            inputmode="numeric" pattern="[0-9]{4}" maxlength="4" value="{{ form.deliverypostcode if form else '' }}" required>
+                        <label for="delivery_postcode">Delivery Postcode</label>
+                        <input type="text" id="delivery_postcode" name="delivery_postcode"
+                            inputmode="numeric" pattern="[0-9]{4}" maxlength="4" value="{{ form.delivery_postcode if form else '' }}" required>
                     </div>
                 
                 <h2>Add parcel to Delivery</h2>
