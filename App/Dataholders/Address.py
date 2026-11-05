@@ -8,15 +8,6 @@ class Delivery_Address(BaseModel):
     suburb: str = Field(min_length=2, pattern=r"^[a-zA-Z\s'-]+$")
     postcode: str = Field(pattern=r"^\d{4}$")
 
-
-    def pickup_address(self):
-        # Logic to retrieve the pickup address for the delivery
-        pass
-
-    def delivery_address(self):
-        # Logic to retrieve the delivery address for the delivery
-        pass
-
 #GET
 #POST
 #DELETE

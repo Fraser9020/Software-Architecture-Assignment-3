@@ -21,8 +21,3 @@ class Parcel(BaseModel):
             "dimension": self.dimension,
             "fragile": self.fragile
         }
-
-
-    def verify_handover(self):
-        # Logic to verify the handover of the parcel
-        pass
