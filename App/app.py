@@ -1,25 +1,23 @@
-﻿import os
-import sys 
+﻿"""Flask application: the order request and quote routes."""
+import os
+import sys
+
+from flask import Flask, redirect, render_template, request, url_for
 from pydantic import ValidationError
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 if BASE_DIR not in sys.path:
     sys.path.insert(0, BASE_DIR)
 
-from flask import Flask, redirect, render_template, request, url_for
-from Models.Customer import Customer
-from Models.Order_Request import OrderRequest
-from Models.Parcel import Parcel
-from Dataholders.Address import Delivery_Address
-
+from Models.Customer import Customer  # noqa: E402
+from Models.Order_Request import OrderRequest  # noqa: E402
+from Models.Parcel import Parcel  # noqa: E402
+from Dataholders.Address import DeliveryAddress  # noqa: E402
 
 # Shared in-memory stores (see state.py) so every area sees the same objects
-from state import customers, order_requests, quotes, deliveries
-from allocation import allocation_bp, seed_staff
-from pickup_routes import pickup_bp
-
-
-
+from state import customers, order_requests, quotes, deliveries  # noqa: E402
+from allocation import allocation_bp, seed_staff  # noqa: E402
+from pickup_routes import pickup_bp  # noqa: E402
 
 app = Flask(
     __name__,
@@ -30,14 +28,15 @@ app.register_blueprint(allocation_bp)   # staff allocation area (Sam)
 app.register_blueprint(pickup_bp)       # pickup and payment area (Eugene)
 seed_staff()
 
-#1 Renders the page to create an order. 
+
 @app.route("/create_order.html", methods=["GET", "POST"])
 def create_order():
+    """Show the create order form."""
     return render_template("create_order.html")
 
 
-# Helper (not a route) - re-shows the order form with what the customer typed
 def order_form_with_errors(errors):
+    """Re-show the order form with what the customer typed (helper, not a route)."""
     parcel_rows = [
         {"weight": weight, "dimension": dimension, "fragile": fragile == "true"}
         for weight, dimension, fragile in zip(
@@ -54,22 +53,21 @@ def order_form_with_errors(errors):
     )
 
 
-# Helper (not a route) - called once the customer sends the order request
-def create_quote(customer, order_request, parcels, pickupaddress, deliveryaddress):
+def create_quote(customer, order_request, parcels, pickup_address, delivery_address):
+    """Show the create quote page for a sent order request (helper, not a route)."""
     return render_template(
         "create_quote.html",
         customer=customer,
         order_request=order_request,
         parcels=parcels,
-        pickupaddress=pickupaddress,
-        deliveryaddress=deliveryaddress,
+        pickup_address=pickup_address,
+        delivery_address=delivery_address,
     )
 
 
-
-#2 once submit order is clicked this function is called
 @app.route("/submit_order", methods=["POST"])
 def submit_order():
+    """Validate the submitted order form, then create or update the order request."""
 
     # Only set when the customer is editing an order request they have not sent
     order_request = None
@@ -84,20 +82,19 @@ def submit_order():
             return str(e), 400
 
     # Get customer info
-    firstname = (request.form.get("firstname") or "").strip()
-    lastname = (request.form.get("lastname") or "").strip()
+    first_name = (request.form.get("first_name") or "").strip()
+    last_name = (request.form.get("last_name") or "").strip()
     email = (request.form.get("email") or "").strip()
     phone = (request.form.get("phone") or "").strip()
 
     # Get address info
-    pickupstreet = (request.form.get("pickupstreet") or "").strip()
-    pickupsuburb = (request.form.get("pickupsuburb") or "").strip()
-    pickuppostcode = (request.form.get("pickuppostcode") or "").strip()
+    pickup_street = (request.form.get("pickup_street") or "").strip()
+    pickup_suburb = (request.form.get("pickup_suburb") or "").strip()
+    pickup_postcode = (request.form.get("pickup_postcode") or "").strip()
 
-    deliverystreet = (request.form.get("deliverystreet") or "").strip()
-    deliverysuburb = (request.form.get("deliverysuburb") or "").strip()
-    deliverypostcode = (request.form.get("deliverypostcode") or "").strip()
-
+    delivery_street = (request.form.get("delivery_street") or "").strip()
+    delivery_suburb = (request.form.get("delivery_suburb") or "").strip()
+    delivery_postcode = (request.form.get("delivery_postcode") or "").strip()
 
     # validate info - collect every error so the user sees them all at once
     errors = []
@@ -105,8 +102,8 @@ def submit_order():
     try:
         # Validate input and create customer
         customer = Customer(
-            firstname=firstname,
-            lastname=lastname,
+            first_name=first_name,
+            last_name=last_name,
             email=email,
             phone=phone
         )
@@ -115,7 +112,9 @@ def submit_order():
 
     try:
         # Validate pick up address
-        pickupaddress = Delivery_Address(street=pickupstreet, suburb=pickupsuburb, postcode=pickuppostcode)
+        pickup_address = DeliveryAddress(
+            street=pickup_street, suburb=pickup_suburb, postcode=pickup_postcode
+        )
     except ValidationError as e:
         # Both addresses have the same field names, so label which one failed
         for err in e.errors():
@@ -124,7 +123,9 @@ def submit_order():
 
     try:
         # Validate delivery address
-        deliveryaddress = Delivery_Address(street=deliverystreet, suburb=deliverysuburb, postcode=deliverypostcode)
+        delivery_address = DeliveryAddress(
+            street=delivery_street, suburb=delivery_suburb, postcode=delivery_postcode
+        )
     except ValidationError as e:
         for err in e.errors():
             err["loc"] = ("delivery " + err["loc"][0],)
@@ -137,7 +138,8 @@ def submit_order():
 
     # Validate parcels
     parcels = []
-    for number, (weight, dimension, fragile) in enumerate(zip(weights, dimensions, fragiles), start=1):
+    rows = zip(weights, dimensions, fragiles)
+    for number, (weight, dimension, fragile) in enumerate(rows, start=1):
         try:
             parcel = Parcel(
                 weight=(weight or "").strip(),
@@ -154,29 +156,30 @@ def submit_order():
     if errors:
         return order_form_with_errors(errors)
 
-    #Once customer is created create order request and parcels associated with the customer
+    # Once customer is created create order request and parcels associated with the customer
 
-    #Create order request, or keep the same IDs when editing
+    # Create order request, or keep the same IDs when editing
     print("Customer ID:", customer.customer_id)
     try:
         if order_request is None:
-            order_request = OrderRequest.create(customer.customer_id, number_of_parcels=len(parcels))
+            order_request = OrderRequest.create(
+                customer.customer_id, number_of_parcels=len(parcels)
+            )
         else:
             customer.customer_id = order_request.customer_id
 
-        #save parcels and the validated addresses on the order request
-        order_request.update_details(parcels, pickupaddress, deliveryaddress)
+        # Save parcels and the validated addresses on the order request
+        order_request.update_details(parcels, pickup_address, delivery_address)
     except ValidationError as e:
         return order_form_with_errors(e.errors())
 
-    print("Order request created with ID:", order_request.customer_id, order_request.request_id,customer.customer_id)
-    #save customer and order request (only once everything is valid)
+    # Save customer and order request (only once everything is valid)
     customers[customer.customer_id] = customer
     order_requests[order_request.request_id] = order_request
 
     # Verify customer and order request created
     print("Customer created!")
-    print("Name:", customer.firstname, customer.lastname)
+    print("Name:", customer.first_name, customer.last_name)
     print("Customer ID:", customer.customer_id)
     print("Order request created!")
     print("Number of Parcels:", order_request.number_of_parcels)
@@ -190,15 +193,13 @@ def submit_order():
         print("Fragile:", parcel.fragile)
         print("Parcel ID:", parcel.id)
 
-
-
     # The customer reviews it before it is sent. Redirect so a refresh can't create a second order
     return redirect(url_for("review_order_request", request_id=order_request.request_id))
 
 
-#Customer reviews their order request and can edit, delete or send it
 @app.route("/verify_order_request", methods=["GET"])
 def review_order_request():
+    """Show the order request so the customer can edit, delete or send it."""
     order_request = order_requests.get((request.args.get("request_id") or "").strip())
     if order_request is None:
         return "Order request not found", 404
@@ -210,9 +211,9 @@ def review_order_request():
     )
 
 
-#Customer sends the order request. After this it can't be changed
 @app.route("/verify_order_request", methods=["POST"])
 def send_order_request():
+    """Send the order request, after which it can't be changed."""
     order_request = order_requests.get((request.form.get("request_id") or "").strip())
     if order_request is None:
         return "Order request not found", 404
@@ -233,9 +234,9 @@ def send_order_request():
     )
 
 
-#Customer changes their mind - shows the order form filled in with their order request
 @app.route("/edit_order_request", methods=["GET"])
 def edit_order_request():
+    """Show the order form filled in with the customer's order request."""
     order_request = order_requests.get((request.args.get("request_id") or "").strip())
     if order_request is None:
         return "Order request not found", 404
@@ -248,23 +249,23 @@ def edit_order_request():
     customer = customers.get(order_request.customer_id)
     form = {
         "request_id": order_request.request_id,
-        "firstname": customer.firstname,
-        "lastname": customer.lastname,
+        "first_name": customer.first_name,
+        "last_name": customer.last_name,
         "email": customer.email,
         "phone": customer.phone,
-        "pickupstreet": order_request.pickup_address.street,
-        "pickupsuburb": order_request.pickup_address.suburb,
-        "pickuppostcode": order_request.pickup_address.postcode,
-        "deliverystreet": order_request.delivery_address.street,
-        "deliverysuburb": order_request.delivery_address.suburb,
-        "deliverypostcode": order_request.delivery_address.postcode,
+        "pickup_street": order_request.pickup_address.street,
+        "pickup_suburb": order_request.pickup_address.suburb,
+        "pickup_postcode": order_request.pickup_address.postcode,
+        "delivery_street": order_request.delivery_address.street,
+        "delivery_suburb": order_request.delivery_address.suburb,
+        "delivery_postcode": order_request.delivery_address.postcode,
     }
     return render_template("create_order.html", form=form, parcel_rows=order_request.parcels)
 
 
-#Customer clicks Delete - asks them to confirm and lets them go back
 @app.route("/delete_order_request", methods=["GET"])
 def confirm_delete_order_request():
+    """Ask the customer to confirm the delete, or let them go back."""
     order_request = order_requests.get((request.args.get("request_id") or "").strip())
     if order_request is None:
         return "Order request not found", 404
@@ -277,9 +278,9 @@ def confirm_delete_order_request():
     return render_template("delete_order_request.html", order_request=order_request)
 
 
-#Customer confirmed the delete
 @app.route("/delete_order_request", methods=["POST"])
 def delete_order_request():
+    """Delete the order request and its customer once confirmed."""
     order_request = order_requests.get((request.form.get("request_id") or "").strip())
     if order_request is None:
         return "Order request not found", 404
@@ -298,15 +299,15 @@ def delete_order_request():
     return render_template("delete_order_request.html", deleted=True)
 
 
-#Takes ifo from the create quote page to create quote
 @app.route("/submit_quote", methods=["POST"])
-def submit_quote(): 
+def submit_quote():
+    """Create a quote from the details entered on the create quote page."""
 
     # Get quote info entered by office staff
     request_id = (request.form.get("request_id") or "").strip()
-    estimateddeliverytime = (request.form.get("estimateddeliverytime") or "").strip()
+    estimated_delivery_time = (request.form.get("estimated_delivery_time") or "").strip()
     # Pydantic turns this into a float and rejects anything that isn't a number
-    deliveryfee = (request.form.get("deliveryfee") or "").strip()
+    delivery_fee = (request.form.get("delivery_fee") or "").strip()
 
     # Quote must belong to an order request that exists
     order_request = order_requests.get(request_id)
@@ -315,7 +316,7 @@ def submit_quote():
 
     # validate info and create quote linked to the order request
     try:
-        quote = order_request.request_quote(deliveryfee, estimateddeliverytime)
+        quote = order_request.request_quote(delivery_fee, estimated_delivery_time)
     except ValidationError as e:
         # Re-show the quote page; the order details are all stored on the order request
         return render_template(
@@ -325,40 +326,36 @@ def submit_quote():
             customer=customers.get(order_request.customer_id),
             order_request=order_request,
             parcels=order_request.parcels,
-            pickupaddress=order_request.pickup_address,
-            deliveryaddress=order_request.delivery_address,
+            pickup_address=order_request.pickup_address,
+            delivery_address=order_request.delivery_address,
         )
     except ValueError as e:
         # The order request already has a quote
         return str(e), 400
 
-    #save quotes
-    quotes[quote.quoteid]= quote
-
+    # Save quotes
+    quotes[quote.quote_id] = quote
 
     print("Quote created!")
-    print("Quote ID:", quote.quoteid)
+    print("Quote ID:", quote.quote_id)
     print("Request ID:", quote.request_id)
-    print("Delivery Fee:", quote.deliveryfee)
-    print("Estimated Delivery Time:", quote.estimateddeliverytime)
-    print("Expires:", quote.expiredate)
+    print("Delivery Fee:", quote.delivery_fee)
+    print("Estimated Delivery Time:", quote.estimated_delivery_time)
+    print("Expires:", quote.expiry_date)
 
-    #office staff would call accept
+    # Office staff would call accept
 
-    
-        
-    #f"Quote created successfully! Quote ID: {quote.quoteid}<br>"
+    # f"Quote created successfully! Quote ID: {quote.quote_id}<br>"
     # f"For order request: {quote.request_id}<br>"
-    #f"Delivery fee: ${quote.deliveryfee:.2f}<br>"
-    # f"Estimated delivery time: {quote.estimateddeliverytime}<br>"
-    # f"Quote valid until: {quote.expiredate.strftime('%d/%m/%Y')}" 
+    # f"Delivery fee: ${quote.delivery_fee:.2f}<br>"
+    # f"Estimated delivery time: {quote.estimated_delivery_time}<br>"
+    # f"Quote valid until: {quote.expiry_date.strftime('%d/%m/%Y')}"
     return render_template("accept_quote.html", quote=quote, order_request=order_request)
 
 
-    
-#3 Customer clicks Accept Quote
 @app.route("/accept_quote", methods=["POST"])
 def accept_quote():
+    """Accept the quote when the customer clicks Accept Quote."""
     quote_id = (request.form.get("quote_id") or "").strip()
 
     # Look up the quote that was saved in submit_quote
@@ -376,9 +373,9 @@ def accept_quote():
     except ValueError as e:
         return str(e), 400
 
-    print("Quote accepted:", quote.quoteid)
+    print("Quote accepted:", quote.quote_id)
 
-    #save delivery
+    # Save delivery
     deliveries[delivery.delivery_id] = delivery
 
     print("Delivery created!")
@@ -387,9 +384,9 @@ def accept_quote():
     return render_template("accepted_quote.html", quote=quote, delivery=delivery)
 
 
-#4 Customer clicks Deny Quote - marks the quote denied and shows the result
 @app.route("/deny_quote", methods=["POST"])
 def deny_quote():
+    """Mark the quote denied when the customer clicks Deny Quote, and show the result."""
     quote_id = (request.form.get("quote_id") or "").strip()
 
     quote = quotes.get(quote_id)
@@ -408,6 +405,7 @@ def deny_quote():
 
 @app.route("/")
 def home():
+    """Show the home page."""
     return render_template("index.html")
 
 

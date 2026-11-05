@@ -4,7 +4,10 @@ from datetime import datetime
 
 
 class Payment:
+    """One attempt to pay an invoice."""
+
     def __init__(self, invoice_id, amount, method, staff_id):
+        """Create a pending payment attempt."""
         self.payment_id = str(uuid.uuid4())
         self.invoice_id = invoice_id
         self.amount = amount
@@ -18,4 +21,5 @@ class Payment:
         return round(self.amount, 2) == round(amount_due, 2)
 
     def record_outcome(self, success):
+        """Record whether the payment succeeded."""
         self.outcome = "success" if success else "failed"

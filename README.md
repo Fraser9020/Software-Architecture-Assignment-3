@@ -25,7 +25,7 @@ python -m pytest App/tests -q
 ## Demo path
 1. Create Order (all fields are validated on the server). On the review page the customer can edit or delete the order request (delete asks first and can go back), then submit it. Once submitted it can no longer be changed.
 2. Enter the quote (fee, estimated delivery time of 1 to 30 days) and Accept it. A Delivery is created.
-3. `/allocate`: choose office staff O001, the delivery and a pickup window tomorrow 10:00-12:00, then allocate S001 Jess Lee.
+3. `/allocate`: choose office staff O001, the delivery and a pickup window tomorrow 10:00-12:00, then allocate S001 Jess Lee. To try reallocation, give S002 Sam Glasser availability on `/availability` first, then reallocate the delivery to S002.
 4. `/pickup`: choose Jess Lee, Record pickup. A wrong amount is rejected and the delivery stays Assigned. The correct amount makes it Picked Up.
 5. `/history` shows the events.
 
@@ -47,9 +47,11 @@ App/tests/                  pytest tests
 
 ## Status flow
 Order request: draft -> pending -> quoted -> accepted.  Quote: pending -> accepted / denied.  Delivery: accepted -> Assigned -> Picked Up.
+Reallocation: an Assigned delivery can be moved to another driver. The old assignment is
+withdrawn, the driver's time is freed and the delivery stays Assigned.
 
 ## Coding standard
-PEP 8 (max line length 100), docstrings on classes and functions.
+PEP 8 (max line length 99), docstrings on classes and functions.
 
 ## Known limitations
 - In-memory storage only.

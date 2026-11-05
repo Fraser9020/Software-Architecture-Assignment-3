@@ -11,6 +11,8 @@ from Dataholders.Time_Window import TimeWindow
 
 
 class AssignmentStatus(Enum):
+    """The stages of an assignment's lifecycle."""
+
     PENDING = "Pending"
     ACTIVE = "Active"
     WITHDRAWN = "Withdrawn"
@@ -25,6 +27,7 @@ class DeliveryAssignment:
 
     def __init__(self, delivery_id: str, staff_id: str, assigned_by: str,
                  window: TimeWindow) -> None:
+        """Create a pending assignment."""
         self.assignment_id = f"A{next(_ids):03d}"
         self.delivery_id = delivery_id
         self.staff_id = staff_id
@@ -48,6 +51,7 @@ class DeliveryAssignment:
         self.status = AssignmentStatus.ACTIVE
 
     def withdraw(self, reason: str, availability: StaffAvailability) -> None:
+        """Withdraw an active assignment and free the staff member's time."""
         if self.status is not AssignmentStatus.ACTIVE:
             raise ValueError(f"Assignment {self.assignment_id} is not active.")
         availability.release(self.assignment_id)
@@ -55,6 +59,7 @@ class DeliveryAssignment:
         self.withdrawn_reason = reason
 
     def complete(self, availability: StaffAvailability) -> None:
+        """Complete an active assignment and free the staff member's time."""
         if self.status is not AssignmentStatus.ACTIVE:
             raise ValueError(f"Assignment {self.assignment_id} is not active.")
         availability.release(self.assignment_id)
@@ -68,6 +73,7 @@ class DeliveryAssignment:
         return self.status is AssignmentStatus.ACTIVE
 
     def is_current(self) -> bool:
+        """Return True while this is the delivery's current assignment."""
         return self.active
 
     def is_assigned_to(self, staff_id: str) -> bool:

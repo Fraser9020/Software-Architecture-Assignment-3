@@ -1,3 +1,4 @@
+"""Pytest setup: makes the App folder importable."""
 import os
 import sys
 

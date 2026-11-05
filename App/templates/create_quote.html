@@ -21,7 +21,7 @@
         <fieldset>
             <legend>Customer Information</legend>
 
-            <p><strong>Customer Name:</strong> {{ customer.firstname }} {{ customer.lastname }}</p>
+            <p><strong>Customer Name:</strong> {{ customer.first_name }} {{ customer.last_name }}</p>
             <p><strong>Email:</strong> {{ customer.email }}</p>
             <p><strong>Phone:</strong> {{ customer.phone }}</p>
             <p><strong>Customer ID:</strong> {{ customer.customer_id }}</p>
@@ -31,10 +31,10 @@
             <legend>Order Request</legend>
 
             <p><strong>Request ID:</strong> {{ order_request.request_id }}</p>
-            <p><strong>Submitted:</strong> {{ order_request.submittedAt.strftime("%d/%m/%Y %H:%M") }}</p>
+            <p><strong>Submitted:</strong> {{ order_request.submitted_at.strftime("%d/%m/%Y %H:%M") }}</p>
             <p><strong>Status:</strong> {{ order_request.status }}</p>
-            <p><strong>Pickup Address:</strong> {{ pickupaddress.street }}, {{ pickupaddress.suburb }} {{ pickupaddress.postcode }}</p>
-            <p><strong>Delivery Address:</strong> {{ deliveryaddress.street }}, {{ deliveryaddress.suburb }} {{ deliveryaddress.postcode }}</p>
+            <p><strong>Pickup Address:</strong> {{ pickup_address.street }}, {{ pickup_address.suburb }} {{ pickup_address.postcode }}</p>
+            <p><strong>Delivery Address:</strong> {{ delivery_address.street }}, {{ delivery_address.suburb }} {{ delivery_address.postcode }}</p>
         </fieldset>
 
         <fieldset>
@@ -79,16 +79,16 @@
                 <input type="hidden" name="request_id" value="{{ order_request.request_id }}">
 
                 <div class="field">
-                    <label for="deliveryfee">Delivery Fee ($)</label>
-                    <input type="number" id="deliveryfee" name="deliveryfee" step="0.01" min="1"
-                        value="{{ form.deliveryfee if form else '' }}" required>
+                    <label for="delivery_fee">Delivery Fee ($)</label>
+                    <input type="number" id="delivery_fee" name="delivery_fee" step="0.01" min="1"
+                        value="{{ form.delivery_fee if form else '' }}" required>
                 </div>
 
                 <div class="field">
-                    <label for="estimateddeliverytime">Estimated Delivery Time (days)</label>
-                    <input type="number" id="estimateddeliverytime" name="estimateddeliverytime"
+                    <label for="estimated_delivery_time">Estimated Delivery Time (days)</label>
+                    <input type="number" id="estimated_delivery_time" name="estimated_delivery_time"
                         min="1" max="30" step="1" placeholder="1 to 30"
-                        value="{{ form.estimateddeliverytime if form else '' }}" required>
+                        value="{{ form.estimated_delivery_time if form else '' }}" required>
                 </div>
             </fieldset>
 

@@ -1,8 +1,10 @@
+"""Parcel: one item in an order request."""
 import uuid
 from pydantic import BaseModel, Field
 
 
 class Parcel(BaseModel):
+    """A parcel's validated weight, dimensions and handling needs."""
 
     # Same limits as the create order form
     weight: float = Field(ge=0.1, le=200)
@@ -15,6 +17,7 @@ class Parcel(BaseModel):
     )
 
     def to_dict(self):
+        """Return the parcel details as a dictionary."""
         return {
             "parcel_id": self.id,
             "weight": self.weight,

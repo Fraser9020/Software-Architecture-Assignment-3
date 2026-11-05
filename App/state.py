@@ -13,4 +13,5 @@ class DeliveryHistory:
 
     @staticmethod
     def record(delivery_id, event, by, note=""):
+        """Add an event to the shared history."""
         history.append((delivery_id, event, by, note))

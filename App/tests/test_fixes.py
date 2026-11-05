@@ -9,23 +9,30 @@ from Dataholders.Time_Window import TimeWindow
 
 TOMORROW = date.today() + timedelta(days=1)
 GOOD_ORDER = {
-    "firstname": "Ann", "lastname": "Lee", "email": "ann@example.com", "phone": "0412345678",
+    "first_name": "Ann", "last_name": "Lee", "email": "ann@example.com", "phone": "0412345678",
     "parcel_weight": ["2"], "dimensions": ["10x10x10"], "parcel_fragile": ["false"],
-    "pickupstreet": "1 Main St", "pickupsuburb": "Richmond", "pickuppostcode": "3121",
-    "deliverystreet": "2 High St", "deliverysuburb": "Hawthorn", "deliverypostcode": "3122",
+    "pickup_street": "1 Main St", "pickup_suburb": "Richmond", "pickup_postcode": "3121",
+    "delivery_street": "2 High St", "delivery_suburb": "Hawthorn", "delivery_postcode": "3122",
 }
 
 
 @pytest.fixture
 def client():
+    """A test client with empty stores and the seed staff."""
     import app as flask_app
     from allocation import seed_staff
-    for store in (state.staff, state.deliveries, state.quotes, state.order_requests, state.customers):
+    stores = (state.staff, state.deliveries, state.quotes, state.order_requests, state.customers)
+    for store in stores:
         store.clear()
     state.history.clear()
     seed_staff()
     flask_app.app.config["TESTING"] = True
     return flask_app.app.test_client()
+
+
+def find_staff(staff_id):
+    """Look up a staff member in the shared store."""
+    return state.staff[staff_id]
 
 
 def make_order(client):
@@ -37,7 +44,8 @@ def make_order(client):
 
 
 def quote_form(request_id, fee="45", days="5"):
-    return {"request_id": request_id, "deliveryfee": fee, "estimateddeliverytime": days}
+    """Form data for the submit_quote route."""
+    return {"request_id": request_id, "delivery_fee": fee, "estimated_delivery_time": days}
 
 
 # -- reallocation ------------------------------------------------------------
@@ -57,7 +65,7 @@ def test_reallocation_works_on_an_assigned_delivery(client):
     delivery, window = allocated_delivery(client)
     state.staff["S002"].declare_availability(TimeWindow(TOMORROW, time(9), time(17)))
     state.staff["O001"].reallocate(delivery, state.staff["S002"], "Driver sick",
-                                   lambda staff_id: state.staff[staff_id], state.DeliveryHistory)
+                                   find_staff, state.DeliveryHistory)
     assert delivery.current_assignment().staff_id == "S002"
     assert delivery.delivery_status == "Assigned"
 
@@ -67,7 +75,7 @@ def test_failed_reallocation_keeps_the_old_assignment(client):
     # S002 has no availability, so reallocating to S002 must fail and change nothing
     with pytest.raises(ValueError):
         state.staff["O001"].reallocate(delivery, state.staff["S002"], "Driver sick",
-                                       lambda staff_id: state.staff[staff_id], state.DeliveryHistory)
+                                       find_staff, state.DeliveryHistory)
     assert delivery.current_assignment().staff_id == "S001"
 
 

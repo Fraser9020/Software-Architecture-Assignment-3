@@ -26,10 +26,12 @@ class StaffAvailability:
     # -- declaring availability -------------------------------------------
 
     def add_window(self, window: TimeWindow) -> None:
+        """Validate and add a declared window."""
         self._validate_window(window)
         self.windows.append(AvailabilityWindow(window))
 
     def remove_window(self, window: TimeWindow) -> None:
+        """Remove an unreserved window. Raises ValueError if reserved or missing."""
         for entry in self.windows:
             if entry.window == window:
                 if entry.reserved_by is not None:
@@ -54,12 +56,14 @@ class StaffAvailability:
         return self._find_free(window) is not None
 
     def reserve(self, window: TimeWindow, assignment_id: str) -> None:
+        """Reserve a free window for an assignment. Raises ValueError if none is free."""
         entry = self._find_free(window)
         if entry is None:
             raise ValueError(f"{self.staff_id} is not free for {window}.")
         entry.reserved_by = assignment_id
 
     def release(self, assignment_id: str) -> None:
+        """Free the window held by an assignment, if there is one."""
         for entry in self.windows:
             if entry.reserved_by == assignment_id:
                 entry.reserved_by = None
@@ -69,12 +73,14 @@ class StaffAvailability:
     # -- helpers ------------------------------------------------------------
 
     def _find_free(self, window: TimeWindow) -> AvailabilityWindow | None:
+        """Return the unreserved window containing *window*, or None."""
         for entry in self.windows:
             if entry.reserved_by is None and entry.window.contains(window):
                 return entry
         return None
 
     def _validate_window(self, window: TimeWindow) -> None:
+        """Raise ValueError if the window is invalid, past or overlapping."""
         if not window.is_valid():
             raise ValueError("End time must be after start time.")
         if window.day < date.today():
