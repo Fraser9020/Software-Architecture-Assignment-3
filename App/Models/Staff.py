@@ -74,6 +74,11 @@ class OfficeStaff(Staff):
             raise ValueError(
                 f"Delivery {delivery.delivery_id} has no current assignment.")
         old_staff = staff_lookup(current.staff_id)
+        # Check the new employee first, so a failed reallocation changes nothing
+        if not new_staff.is_active():
+            raise ValueError(f"{new_staff.staff_id} is inactive and cannot be assigned.")
+        if not new_staff.availability.is_free(current.window):
+            raise ValueError(f"{new_staff.staff_id} is not free for {current.window}.")
         current.withdraw(reason, old_staff.availability)
         if history is not None:
             history.record(delivery.delivery_id, "Assignment withdrawn",
