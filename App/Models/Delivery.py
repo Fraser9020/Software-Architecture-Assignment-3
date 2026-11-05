@@ -73,7 +73,11 @@ class Delivery(BaseModel):
 
     def set_assignment(self, assignment):
         """Add an assignment and mark the delivery Assigned. Raises ValueError."""
-        if self.delivery_status.lower() not in self.ALLOCATABLE:
+        awaiting = self.delivery_status.lower() in self.ALLOCATABLE
+        # after a withdrawal (reallocation) an Assigned delivery has no current assignment
+        reallocating = (self.delivery_status == "Assigned"
+                        and self.current_assignment() is None)
+        if not (awaiting or reallocating):
             raise ValueError(
                 f"Delivery {self.delivery_id[:8]} is not awaiting allocation "
                 f"(status: {self.delivery_status}).")
