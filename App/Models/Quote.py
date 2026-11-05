@@ -1,4 +1,4 @@
-﻿"""Quote: the price and delivery time offered for an order request."""
+"""Quote: the price and delivery time offered for an order request."""
 import uuid
 from datetime import date, timedelta
 from pydantic import BaseModel, Field

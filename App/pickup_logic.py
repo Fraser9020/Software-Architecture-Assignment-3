@@ -32,6 +32,8 @@ def confirm_pickup(delivery, staff_id, condition, amount_text, method, parcels_o
     employee = staff.get(staff_id)
     if not isinstance(employee, DeliveryStaff):
         return False, ["Please choose an employee."]
+    if not employee.is_active():
+        return False, ["This employee is no longer active."]
     assignment = delivery.current_assignment()
     if assignment is None or not assignment.is_assigned_to(staff_id):
         return False, ["Only the assigned employee can record this pickup."]
@@ -71,4 +73,6 @@ def confirm_pickup(delivery, staff_id, condition, amount_text, method, parcels_o
     log(delivery, staff_id, "Parcel condition", condition.strip())
     log(delivery, staff_id, "Picked Up", f"By {employee.name}")
     delivery.delivery_status = "Picked Up"
+    # The assignment is finished, so free the driver's time and stop reallocation
+    assignment.complete(employee.availability)
     return True, ["Payment processed. The delivery is now Picked Up."]

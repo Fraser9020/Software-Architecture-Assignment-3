@@ -50,7 +50,7 @@ def test_create_staff_duplicate_id_rejected(client):
 
 def test_create_staff_success(client):
     page = follow(client, client.post("/staff/create", data={
-        "role": "office", "staff_id": "O002", "name": "Priya", "phone": "04"}))
+        "role": "office", "staff_id": "O002", "name": "Priya", "phone": "0400000004"}))
     assert "Created O002 Priya (OfficeStaff, active)" in page
 
 

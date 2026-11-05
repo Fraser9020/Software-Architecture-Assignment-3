@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from abc import ABC
 from datetime import date
 
@@ -21,6 +22,8 @@ class Staff(ABC):
             raise ValueError("Name cannot be blank.")
         if not phone.strip():
             raise ValueError("Phone cannot be blank.")
+        if not re.fullmatch(r"\d{10}", phone.replace(" ", "")):
+            raise ValueError("Phone must be 10 digits, for example 0400 000 001.")
         self.staff_id = staff_id
         self.name = name
         self.phone = phone

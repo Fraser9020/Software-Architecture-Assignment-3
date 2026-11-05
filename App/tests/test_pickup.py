@@ -112,3 +112,22 @@ def test_pages_work_end_to_end(setup):
     assert b"rejected" in client.post(f"/pickup/{delivery.delivery_id}", data=data).data
     data["amount"] = "45"
     assert b"Payment processed" in client.post(f"/pickup/{delivery.delivery_id}", data=data).data
+
+
+def test_pickup_completes_assignment_so_it_cannot_be_reallocated(setup):
+    delivery, _, driver, client = setup
+    confirm_pickup(delivery, driver.staff_id, "Good", "45", "Cash", True)
+    assert delivery.current_assignment() is None   # assignment is Completed
+    assert driver.availability.windows[0].reserved_by is None   # driver's time is free
+    client.post("/allocate/reallocate", data={"office_id": "O001", "staff_id": "S002",
+                                              "delivery_id": delivery.delivery_id,
+                                              "reason": "sick"})
+    assert delivery.delivery_status == "Picked Up"
+
+
+def test_inactive_employee_cannot_record_pickup(setup):
+    delivery, _, driver, _ = setup
+    driver.deactivate()
+    ok, messages = confirm_pickup(delivery, driver.staff_id, "Good", "45", "Cash", True)
+    assert not ok and "no longer active" in messages[0]
+    assert delivery.delivery_status == "Assigned"

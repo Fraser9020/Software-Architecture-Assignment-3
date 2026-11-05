@@ -145,3 +145,10 @@ def test_pickup_area_contract(office, driver):
     assert a.is_assigned_to("S001")
     a.complete(driver.availability)
     assert not a.active and driver.availability.is_free(win(10, 12))
+
+
+def test_staff_phone_must_be_ten_digits():
+    from Models.Staff import DeliveryStaff
+    with pytest.raises(ValueError):
+        DeliveryStaff("S010", "Kim", "12345")
+    assert DeliveryStaff("S011", "Kim", "0400 000 010").phone == "0400 000 010"
