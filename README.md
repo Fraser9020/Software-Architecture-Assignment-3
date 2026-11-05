@@ -5,10 +5,10 @@ Data is kept in memory (it resets when the app restarts).
 
 | Area | Pages | Owner | Notes |
 |---|---|---|---|
-| Delivery request | `/create_order.html` | Fraser Marshall | customer, order request, parcels, pickup and delivery addresses |
-| Quotes | create quote, accept / decline | Fraser Marshall | accepted quote creates the Delivery |
-| Staff allocation | `/staff`, `/availability`, `/allocate`, `/history` | Samuel Glasser | staff records, availability, (re)allocation, history |
-| Pickup and payment | `/pickup` | Yevhen Hrekov | assigned employee records pickup and payment, see `README_pickup.md` |
+| Delivery request | `/create_order.html` | Fraser  | customer, order request, parcels, pickup and delivery addresses |
+| Quotes | create quote, accept / decline | Fraser  | accepted quote creates the Delivery |
+| Staff allocation | `/staff`, `/availability`, `/allocate`, `/history` | Samuel  | staff records, availability, (re)allocation, history |
+| Pickup and payment | `/pickup` | Eugene | assigned employee records pickup and payment, see `README_pickup.md` |
 
 ## Run
 ```
