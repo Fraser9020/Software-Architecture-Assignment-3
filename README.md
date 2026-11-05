@@ -23,8 +23,8 @@ python -m pytest App/tests -q
 ```
 
 ## Demo path
-1. Create Order (all fields are validated on the server).
-2. Enter the quote (fee, estimated delivery date) and Accept it. A Delivery is created.
+1. Create Order (all fields are validated on the server). On the review page the customer can edit or delete the order request (delete asks first and can go back), then submit it. Once submitted it can no longer be changed.
+2. Enter the quote (fee, estimated delivery time of 1 to 30 days) and Accept it. A Delivery is created.
 3. `/allocate`: choose office staff O001, the delivery and a pickup window tomorrow 10:00-12:00, then allocate S001 Jess Lee.
 4. `/pickup`: choose Jess Lee, Record pickup. A wrong amount is rejected and the delivery stays Assigned. The correct amount makes it Picked Up.
 5. `/history` shows the events.
@@ -46,7 +46,7 @@ App/tests/                  pytest tests
 ```
 
 ## Status flow
-Quote: pending -> accepted / declined.  Delivery: accepted -> Assigned -> Picked Up.
+Order request: draft -> pending -> quoted -> accepted.  Quote: pending -> accepted / denied.  Delivery: accepted -> Assigned -> Picked Up.
 
 ## Coding standard
 PEP 8 (max line length 100), docstrings on classes and functions.
