@@ -18,7 +18,7 @@ def make_delivery(office, driver, fee, number):
     """An accepted quote and a delivery, allocated to the driver."""
     request_id = f"request-{number}"
     quote = Quote(request_id=request_id, deliveryfee=fee,
-                  estimateddeliverytime="2026-11-10", status="accepted")
+                  estimateddeliverytime=5, status="accepted")
     state.quotes[quote.quoteid] = quote
     delivery = Delivery(request_id, "2026-11-10")
     state.deliveries[delivery.delivery_id] = delivery

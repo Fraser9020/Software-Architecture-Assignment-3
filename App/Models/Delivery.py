@@ -73,11 +73,3 @@ class Delivery(BaseModel):
         self.assignments.append(assignment)
         self.pickup_window = assignment.window
         self.delivery_status = "Assigned"
-
-    def schedule_delivery(self, status, delivery_date, request_id):
-        # Logic to schedule a delivery for the given order
-        pass
-
-    def complete_delivery(self, delivery_id):
-        # Logic to mark the delivery as completed
-        pass
