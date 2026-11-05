@@ -6,10 +6,10 @@ import state
 
 
 ORDER = {
-    "firstname": "Ann", "lastname": "Lee", "email": "ann@example.com",
+    "first_name": "Ann", "last_name": "Lee", "email": "ann@example.com",
     "phone": "0400000000",
-    "pickupstreet": "1 High St", "pickupsuburb": "Hawthorn", "pickuppostcode": "3122",
-    "deliverystreet": "2 Low St", "deliverysuburb": "Kew", "deliverypostcode": "3101",
+    "pickup_street": "1 High St", "pickup_suburb": "Hawthorn", "pickup_postcode": "3122",
+    "delivery_street": "2 Low St", "delivery_suburb": "Kew", "delivery_postcode": "3101",
     "parcel_weight": ["2", "3.5"], "dimensions": ["10 x 10 x 10", "20 x 20 x 20"],
     "parcel_fragile": ["false", "true"],
 }
@@ -46,8 +46,8 @@ def test_new_order_goes_to_review_as_a_draft(client):
 def test_draft_cannot_be_quoted_until_sent(client):
     order = draft_order(client)
     response = client.post("/submit_quote", data={
-        "request_id": order.request_id, "deliveryfee": "45",
-        "estimateddeliverytime": "5",
+        "request_id": order.request_id, "delivery_fee": "45",
+        "estimated_delivery_time": "5",
     })
     assert response.status_code == 400
     assert not state.quotes
@@ -74,12 +74,12 @@ def test_edit_page_is_filled_in_with_the_order(client):
 def test_edit_updates_the_same_order(client):
     order = draft_order(client)
     request_id, customer_id = order.request_id, order.customer_id
-    changed = {**ORDER, "request_id": request_id, "firstname": "Bea", "pickupsuburb": "Carlton",
+    changed = {**ORDER, "request_id": request_id, "first_name": "Bea", "pickup_suburb": "Carlton",
                "parcel_weight": ["7"], "dimensions": ["5 x 5 x 5"], "parcel_fragile": ["true"]}
     assert client.post("/submit_order", data=changed).status_code == 302
     assert list(state.order_requests) == [request_id]
     assert list(state.customers) == [customer_id]
-    assert state.customers[customer_id].firstname == "Bea"
+    assert state.customers[customer_id].first_name == "Bea"
     assert order.pickup_address.suburb == "Carlton"
     assert order.pickup_address.order_id == request_id
     assert order.number_of_parcels == 1
@@ -89,15 +89,15 @@ def test_edit_updates_the_same_order(client):
 
 def test_invalid_edit_shows_errors_and_changes_nothing(client):
     order = draft_order(client)
-    changed = {**ORDER, "request_id": order.request_id, "firstname": "Bea", "pickuppostcode": "12",
-               "parcel_weight": ["999", "3.5"]}
+    changed = {**ORDER, "request_id": order.request_id, "first_name": "Bea",
+               "pickup_postcode": "12", "parcel_weight": ["999", "3.5"]}
     response = client.post("/submit_order", data=changed)
     page = response.get_data(as_text=True)
     assert response.status_code == 200
     assert "pickup postcode" in page and "parcel 1 weight" in page
     assert 'value="Bea"' in page and 'value="999"' in page
     assert f'name="request_id" value="{order.request_id}"' in page
-    assert state.customers[order.customer_id].firstname == "Ann"
+    assert state.customers[order.customer_id].first_name == "Ann"
     assert order.pickup_address.postcode == "3122"
     assert order.parcels[0].weight == 2
 
@@ -140,7 +140,8 @@ def test_sent_order_cannot_be_changed(client):
     assert client.post("/submit_order", data={**ORDER, **data}).status_code == 400
     assert send(client, order).status_code == 400
     assert order.request_id in state.order_requests
-    assert "no longer be changed" in client.get("/verify_order_request" + args).get_data(as_text=True)
+    response = client.get("/verify_order_request" + args)
+    assert "no longer be changed" in response.get_data(as_text=True)
 
 
 def test_unknown_order_is_not_found(client):

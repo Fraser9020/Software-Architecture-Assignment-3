@@ -49,7 +49,7 @@ App/tests/                  pytest tests
 Order request: draft -> pending -> quoted -> accepted.  Quote: pending -> accepted / denied.  Delivery: accepted -> Assigned -> Picked Up.
 
 ## Coding standard
-PEP 8 (max line length 100), docstrings on classes and functions.
+PEP 8 (max line length 99), docstrings on classes and functions.
 
 ## Known limitations
 - In-memory storage only.

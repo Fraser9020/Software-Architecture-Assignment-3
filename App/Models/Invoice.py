@@ -6,7 +6,10 @@ from Models.Payment import Payment
 
 
 class Invoice:
+    """The fee owed for a delivery and the attempts to pay it."""
+
     def __init__(self, delivery_id, amount_due):
+        """Create a payable invoice for the delivery."""
         self.invoice_id = str(uuid.uuid4())
         self.delivery_id = delivery_id
         self.amount_due = amount_due
@@ -15,9 +18,11 @@ class Invoice:
         self.payments = []  # every attempt, failed ones too
 
     def mark_payable(self):
+        """Mark the invoice as payable."""
         self.status = "payable"
 
     def close(self):
+        """Mark the invoice as paid."""
         self.status = "paid"
 
     def create_payment(self, amount, method, staff_id):
