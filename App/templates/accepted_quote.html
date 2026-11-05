@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>YOWD Delivery System</title>
+    <style>
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>YOWD Delivery System</h1>
+    </header>
+
+    <main>
+                    <h2>Quote accepted! Your order is on its way.</h2>
+
+                <p><strong>Quote ID:</strong> {{ quote.quoteid }}</p>
+                <p><strong>Order request:</strong> {{ quote.request_id }}</p>
+                <p><strong>Delivery ID:</strong> {{ delivery.delivery_id }}</p>
+                <p><strong>Estimated delivery:</strong> {{ delivery.delivery_date }}</p>
+
+                <h2>Click here to go to the home page </h2>
+                <a href="{{ url_for('home') }}">Home</a>
+    </main>
+
+</body>
+</html>
