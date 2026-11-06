@@ -47,6 +47,7 @@ App/tests/                  pytest tests
 
 ## Status flow
 Order request: draft -> pending -> quoted -> accepted.  Quote: pending -> accepted / denied.  Delivery: accepted -> Assigned -> Picked Up.
+Denying a quote returns the order request to pending, so a new quote can be created.
 Reallocation: an Assigned delivery can be moved to another driver. The old assignment is
 withdrawn, the driver's time is freed and the delivery stays Assigned.
 

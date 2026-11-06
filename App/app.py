@@ -353,12 +353,35 @@ def deny_quote():
     if quote is None:
         return "Quote not found", 404
 
+    order_request = order_requests.get(quote.request_id)
+    if order_request is None:
+        return "Order request not found", 404
+
     try:
-        quote.deny()
+        quote.deny(order_request)
     except ValueError as e:
         return str(e), 400
 
     return render_template("denied_quote.html", quote=quote)
+
+
+@app.route("/create_quote", methods=["GET"])
+def new_quote():
+    """Show the create quote page again after the last quote was denied."""
+    order_request = order_requests.get((request.args.get("request_id") or "").strip())
+    if order_request is None:
+        return "Order request not found", 404
+
+    if order_request.status != "pending":
+        return "Quote can only be created for pending order requests.", 400
+
+    return create_quote(
+        customers.get(order_request.customer_id),
+        order_request,
+        order_request.parcels,
+        order_request.pickup_address,
+        order_request.delivery_address,
+    )
 
 
 @app.route("/")

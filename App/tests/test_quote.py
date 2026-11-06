@@ -97,12 +97,42 @@ def test_expired_quote_cannot_be_accepted():
 def test_answered_quote_cannot_be_answered_again():
     order = make_order()
     quote = order.request_quote(45, 5)
-    quote.deny()
+    quote.deny(order)
     assert quote.status == "denied"
     with pytest.raises(ValueError, match="already been denied"):
         quote.accept(order)
     with pytest.raises(ValueError, match="already been denied"):
-        quote.deny()
+        quote.deny(order)
+
+
+def test_deny_lets_the_order_get_a_new_quote():
+    order = make_order()
+    denied = order.request_quote(45, 5)
+    denied.deny(order)
+    assert order.status == "pending"
+    new_quote = order.request_quote(40, 5)
+    assert order.status == "quoted"
+    assert new_quote.quote_id != denied.quote_id
+    assert denied.status == "denied"
+
+
+def test_denying_again_does_not_affect_the_new_quote():
+    order = make_order()
+    denied = order.request_quote(45, 5)
+    denied.deny(order)
+    order.request_quote(40, 5)
+    with pytest.raises(ValueError, match="already been denied"):
+        denied.deny(order)
+    assert order.status == "quoted"
+
+
+def test_cannot_deny_with_another_order():
+    order = make_order()
+    quote = order.request_quote(45, 5)
+    with pytest.raises(ValueError, match="does not belong"):
+        quote.deny(make_order())
+    assert quote.status == "pending"
+    assert order.status == "quoted"
 
 
 # -- routes ------------------------------------------------------------------
@@ -154,6 +184,43 @@ def test_deny_creates_no_delivery(client):
     assert "successfully denied" in page and quote.quote_id in page
     assert quote.status == "denied"
     assert not state.deliveries
+
+
+def test_new_quote_can_be_accepted_after_deny(client):
+    order = submit_order(client)
+    submit_quote(client, order.request_id)
+    denied = next(iter(state.quotes.values()))
+    page = client.post("/deny_quote", data={"quote_id": denied.quote_id})
+    assert f"/create_quote?request_id={order.request_id}" in page.get_data(as_text=True)
+    assert client.get("/create_quote", query_string={
+        "request_id": order.request_id}).status_code == 200
+
+    assert submit_quote(client, order.request_id, fee="40").status_code == 200
+    new = next(q for q in state.quotes.values() if q.quote_id != denied.quote_id)
+    assert client.post("/accept_quote", data={"quote_id": new.quote_id}).status_code == 200
+    assert order.status == "accepted"
+    assert denied.status == "denied"
+    assert len(state.deliveries) == 1
+
+
+def test_denied_quote_cannot_be_accepted_once_a_new_quote_exists(client):
+    order = submit_order(client)
+    submit_quote(client, order.request_id)
+    denied = next(iter(state.quotes.values()))
+    client.post("/deny_quote", data={"quote_id": denied.quote_id})
+    submit_quote(client, order.request_id, fee="40")
+    response = client.post("/accept_quote", data={"quote_id": denied.quote_id})
+    assert response.status_code == 400
+    assert order.status == "quoted"
+    assert not state.deliveries
+
+
+def test_create_quote_page_needs_a_pending_order(client):
+    assert client.get("/create_quote", query_string={"request_id": "nope"}).status_code == 404
+    order = submit_order(client)
+    submit_quote(client, order.request_id)
+    response = client.get("/create_quote", query_string={"request_id": order.request_id})
+    assert response.status_code == 400
 
 
 def test_accept_shows_the_accepted_page(client):

@@ -40,6 +40,9 @@ class Quote(BaseModel):
 
     def accept(self, order_request):
         """Accept the quote, update the order request and return the new delivery."""
+        #check quote is part of the order request
+        if self.request_id != order_request.request_id:
+            raise ValueError("This quote does not belong to the order request.")
         # Accepting commits the order, so it creates the delivery linked to the order request
         self._check_pending()
         if not self.is_valid():
@@ -51,8 +54,12 @@ class Quote(BaseModel):
         order_request.status = "accepted"
         return delivery
 
-    def deny(self):
-        """Mark the quote as denied."""
+    def deny(self, order_request):
+        """Mark the quote as denied and let the order request get a new quote."""
+        if self.request_id != order_request.request_id:
+            raise ValueError("This quote does not belong to the order request.")
         # The quote is kept with a denied status, not removed
         self._check_pending()
         self.status = "denied"
+        # Back to pending, so office staff can create a new quote
+        order_request.status = "pending"
