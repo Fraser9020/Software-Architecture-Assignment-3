@@ -6,8 +6,8 @@ from pydantic import BaseModel, EmailStr, Field
 class Customer(BaseModel):
     """A customer's validated contact details."""
 
-    first_name: str = Field(min_length=1)
-    last_name: str = Field(min_length=1)
+    first_name: str = Field(min_length=1, max_length=100)
+    last_name: str = Field(min_length=1, max_length=100)
     email: EmailStr
     phone: str = Field(pattern=r"^\d{10}$")
 
